@@ -59,7 +59,7 @@ class TestTriangleIntegrator(unittest.TestCase):
         a = np.array([0, 0, 0], dtype=np.float32)
         b = np.array([0, 1, 0], dtype=np.float32)
         c = np.array([0, 0, 1], dtype=np.float32)
-        result = IH3.InteriorHelmholtzSolver3D.ComplexQuad(func, a, b, c)
+        result = IH3.ComplexQuad(func, a, b, c)
         self.assertAlmostEqual(result, 0.5, msg = "{} != {}".format(result, 0.5))
 
 
