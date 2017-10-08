@@ -16,12 +16,13 @@
 # along with AcousticBEM.  If not, see <http://www.gnu.org/licenses/>.
 # ---------------------------------------------------------------------------
 import unittest
+import numpy as np
+from scipy.special import hankel1
+
 import InteriorHelmholtzSolver2D as IH
 import InteriorHelmholtzSolver2D_C as IH
 import InteriorHelmholtzSolverRAD as RAD
 import InteriorHelmholtzSolver3D as IH3
-from scipy.special import hankel1
-import numpy as np
 
 class TestComplexQuadGenerator(unittest.TestCase):
 
@@ -59,7 +60,7 @@ class TestTriangleIntegrator(unittest.TestCase):
         c = np.array([0, 0, 1], dtype=np.float32)
         result = IH3.InteriorHelmholtzSolver3D.ComplexQuad(func, a, b, c)
         self.assertAlmostEqual(result, 0.5, msg = "{} != {}".format(result, 0.5))
-    
+
 class TestHankel(unittest.TestCase):
 
     def testHankel01(self):
@@ -93,7 +94,7 @@ class TestComputeL(unittest.TestCase):
         zPy = IH.InteriorHelmholtzSolver2D.ComputeL(k, p, a, b, pOnElement)
         zC  = IH.InteriorHelmholtzSolver2D_C.ComputeL(k, p, a, b, pOnElement)
         self.assertAlmostEqual(zPy, zC, msg = "{} != {}".format(zPy, zC))
-        
+
     def testComputeL02(self):
         k = 10.0
         p = np.array([0.5, 0.75], dtype=np.float32)
@@ -103,7 +104,7 @@ class TestComputeL(unittest.TestCase):
         zPy = IH.InteriorHelmholtzSolver2D.ComputeL(k, p, a, b, pOnElement)
         zC  = IH.InteriorHelmholtzSolver2D_C.ComputeL(k, p, a, b, pOnElement)
         self.assertAlmostEqual(zPy, zC, msg = "{} != {}".format(zPy, zC))
-        
+
     def testComputeL03(self):
         k = 0.0
         p = np.array([0.0, 0.05], dtype=np.float32)
@@ -135,7 +136,7 @@ class TestComputeM(unittest.TestCase):
         zPy = IH.InteriorHelmholtzSolver2D.ComputeM(k, p, a, b, pOnElement)
         zC  = IH.InteriorHelmholtzSolver2D_C.ComputeM(k, p, a, b, pOnElement)
         self.assertAlmostEqual(zPy, zC, msg = "{} != {}".format(zPy, zC))
-        
+
     def testComputeM02(self):
         k = 10.0
         p = np.array([0.5, 0.75], dtype=np.float32)
@@ -145,7 +146,7 @@ class TestComputeM(unittest.TestCase):
         zPy = IH.InteriorHelmholtzSolver2D.ComputeM(k, p, a, b, pOnElement)
         zC  = IH.InteriorHelmholtzSolver2D_C.ComputeM(k, p, a, b, pOnElement)
         self.assertAlmostEqual(zPy, zC, msg = "{} != {}".format(zPy, zC))
-        
+
     def testComputeM03(self):
         k = 0.0
         p = np.array([0.0, 0.05], dtype=np.float32)
@@ -155,7 +156,7 @@ class TestComputeM(unittest.TestCase):
         zPy = IH.InteriorHelmholtzSolver2D.ComputeM(k, p, a, b, pOnElement)
         zC  = IH.InteriorHelmholtzSolver2D_C.ComputeM(k, p, a, b, pOnElement)
         self.assertAlmostEqual(zPy, zC, msg = "{} != {}".format(zPy, zC))
-        
+
     def testComputeM04(self):
         k = 10.0
         p = np.array([0.0, 0.05], dtype=np.float32)
@@ -165,7 +166,7 @@ class TestComputeM(unittest.TestCase):
         zPy = IH.InteriorHelmholtzSolver2D.ComputeM(k, p, a, b, pOnElement)
         zC  = IH.InteriorHelmholtzSolver2D_C.ComputeM(k, p, a, b, pOnElement)
         self.assertAlmostEqual(zPy, zC, msg = "{} != {}".format(zPy, zC))
-        
+
 class TestComputeMt(unittest.TestCase):
 
     def testComputeMt01(self):
@@ -178,7 +179,7 @@ class TestComputeMt(unittest.TestCase):
         zPy = IH.InteriorHelmholtzSolver2D.ComputeMt(k, p, normal_p, a, b, pOnElement)
         zC  = IH.InteriorHelmholtzSolver2D_C.ComputeMt(k, p, normal_p, a, b, pOnElement)
         self.assertAlmostEqual(zPy, zC, msg = "{} != {}".format(zPy, zC))
-        
+
     def testComputeMt02(self):
         k = 10.0
         p = np.array([0.5, 0.75], dtype=np.float32)
@@ -189,7 +190,7 @@ class TestComputeMt(unittest.TestCase):
         zPy = IH.InteriorHelmholtzSolver2D.ComputeMt(k, p, normal_p, a, b, pOnElement)
         zC  = IH.InteriorHelmholtzSolver2D_C.ComputeMt(k, p, normal_p, a, b, pOnElement)
         self.assertAlmostEqual(zPy, zC, msg = "{} != {}".format(zPy, zC))
-        
+
     def testComputeMt03(self):
         k = 0.0
         p = np.array([0.0, 0.05], dtype=np.float32)
@@ -200,7 +201,7 @@ class TestComputeMt(unittest.TestCase):
         zPy = IH.InteriorHelmholtzSolver2D.ComputeMt(k, p, normal_p, a, b, pOnElement)
         zC  = IH.InteriorHelmholtzSolver2D_C.ComputeMt(k, p, normal_p, a, b, pOnElement)
         self.assertAlmostEqual(zPy, zC, msg = "{} != {}".format(zPy, zC))
-        
+
     def testComputeMt04(self):
         k = 10.0
         p = np.array([0.0, 0.05], dtype=np.float32)
@@ -211,7 +212,7 @@ class TestComputeMt(unittest.TestCase):
         zPy = IH.InteriorHelmholtzSolver2D.ComputeMt(k, p, normal_p, a, b, pOnElement)
         zC  = IH.InteriorHelmholtzSolver2D_C.ComputeMt(k, p, normal_p, a, b, pOnElement)
         self.assertAlmostEqual(zPy, zC, msg = "{} != {}".format(zPy, zC))
-                
+
 class TestComputeN(unittest.TestCase):
 
     def testComputeN01(self):
@@ -224,7 +225,7 @@ class TestComputeN(unittest.TestCase):
         zPy = IH.InteriorHelmholtzSolver2D.ComputeN(k, p, normal_p, a, b, pOnElement)
         zC  = IH.InteriorHelmholtzSolver2D_C.ComputeN(k, p, normal_p, a, b, pOnElement)
         self.assertAlmostEqual(zPy, zC, msg = "{} != {}".format(zPy, zC))
-        
+
     def testComputeN02(self):
         k = 10.0
         p = np.array([0.5, 0.75], dtype=np.float32)
@@ -235,7 +236,7 @@ class TestComputeN(unittest.TestCase):
         zPy = IH.InteriorHelmholtzSolver2D.ComputeN(k, p, normal_p, a, b, pOnElement)
         zC  = IH.InteriorHelmholtzSolver2D_C.ComputeN(k, p, normal_p, a, b, pOnElement)
         self.assertAlmostEqual(zPy, zC, 6, msg = "{} != {}".format(zPy, zC))
-        
+
     def testComputeN(self):
         k = 0.0
         p = np.array([0.0, 0.05], dtype=np.float32)
@@ -246,7 +247,7 @@ class TestComputeN(unittest.TestCase):
         zPy = IH.InteriorHelmholtzSolver2D.ComputeN(k, p, normal_p, a, b, pOnElement)
         zC  = IH.InteriorHelmholtzSolver2D_C.ComputeN(k, p, normal_p, a, b, pOnElement)
         self.assertAlmostEqual(zPy, zC, msg = "{} != {}".format(zPy, zC))
-        
+
     def testComputeN04(self):
         k = 10.0
         p = np.array([0.0, 0.05], dtype=np.float32)
@@ -263,4 +264,4 @@ class TestComputeN(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-    
+
