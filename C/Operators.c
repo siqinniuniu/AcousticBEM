@@ -21,10 +21,6 @@
 #include <complex.h>
 #include <assert.h>
 
-#include "gsl/gsl_complex.h"
-#include "gsl/gsl_complex_math.h"
-#include "gsl/gsl_sf_bessel.h"
-
 #include "Operators.h"
 
 #define MAX_LINE_RULE_SAMPLES 2048
@@ -130,7 +126,7 @@ Float2 Normal2D(Float2 a, Float2 b) {
   Float2 res;
   res.x =  vec.y / len;
   res.y = -vec.x / len;
-  
+
   return res;
 }
 
@@ -167,7 +163,7 @@ complex float complexQuad3D(complex float(*integrand)(Float3, void*), void * sta
 
 void semiCircleIntegralRule(int nSections, IntRule1D intRule, IntRule2D * pSemiCircleRule) {
   pSemiCircleRule->nSamples = nSections * intRule.nSamples;
-        
+
   float factor = M_PI / nSections;
   for (int i = 0; i < pSemiCircleRule->nSamples; ++i) {
     float arcAbscissa = (i / intRule.nSamples + intRule.pX[i % intRule.nSamples]) * factor;
@@ -217,23 +213,23 @@ complex float intL3_2D(Float2 x, void* state) {
 }
 
 /* Computes elements of the Helmholtz L-Operator for 2D.
- * 
+ *
  * Parameters:
  *   k - the wavenumber of the problem.
  *   px, py - the point receiving radiation from the boundary.
  *   ax, ay - the starting point of the boundary element being integrated over.
  *   bx, by - the end point of the bondary element being integrated over.
  *   pOnElement - a boolean indicating if p is on the boundary element being integrated.
- * 
+ *
  *   Returns:
  *     The results of the integration, which are typically a complex
- *     number are stored in those two floats, the first being the Real-, the 
+ *     number are stored in those two floats, the first being the Real-, the
  *     second being the Imaginary component of that complex value.
  */
 complex float computeL_2D(float k, Float2 p, Float2 a, Float2 b, bool pOnElement) {
   IntL stat = {k, p};
   IntRule1D intRule = {8, aX_1D, aW_1D};
-  
+
   Float2 ab = sub2f(b, a);
   complex float res;
   if (pOnElement) {
@@ -276,17 +272,17 @@ complex float intM2_2D(Float2 x, void* state) {
 }
 
 /* Computes elements of the Helmholtz M-Operator.
- * 
+ *
  * Parameters:
  *   k - the wavenumber of the problem.
  *   px, py - the point receiving radiation from the boundary.
  *   ax, ay - the starting point of the boundary element being integrated over.
  *   bx, by - the end point of the bondary element being integrated over.
  *   pOnElement - a boolean indicating if p is on the boundary element being integrated.
- * 
+ *
  *   Returns:
  *     The results of the integration, which are typically a complex
- *     number are stored in those two floats, the first being the Real-, the 
+ *     number are stored in those two floats, the first being the Real-, the
  *     second being the Imaginary component of that complex value.
  */
 complex float computeM_2D(float k, Float2 p, Float2 a, Float2 b, bool pOnElement) {
@@ -313,22 +309,22 @@ void ComputeM_2D(float k, Float2 p, Float2 a, Float2 b, bool pOnElement, Complex
 }
 
 /* Computes elements of the Helmholtz Mt-Operator.
- * 
+ *
  * Parameters:
  *   k - the wavenumber of the problem.
  *   px, py - the point receiving radiation from the boundary.
  *   ax, ay - the starting point of the boundary element being integrated over.
  *   bx, by - the end point of the bondary element being integrated over.
  *   pOnElement - a boolean indicating if p is on the boundary element being integrated.
- * 
+ *
  *   Returns:
  *     The results of the integration, which are typically a complex
- *     number are stored in those two floats, the first being the Real-, the 
+ *     number are stored in those two floats, the first being the Real-, the
  *     second being the Imaginary component of that complex value.
  */
 complex float computeMt_2D(float k, Float2 p, Float2 normal_p, Float2 a, Float2 b, bool pOnElement) {
-  /* The flollowing is a little hacky, as we're not storing the actual normal_p vector in the 
-   * normal_q field of the state struct. By doing this we can reuse the two functions for the 
+  /* The flollowing is a little hacky, as we're not storing the actual normal_p vector in the
+   * normal_q field of the state struct. By doing this we can reuse the two functions for the
    * M operator's integral evaluation intM1 and intM2.
    */
   Float2 zero = {0.0f, 0.0f};
@@ -365,7 +361,7 @@ complex float intN1_2D(Float2 x, void* state) {
   complex float c2 = 0.50f * I * s->k / R * hankel1(1, s->k * R)
     - 0.25f * I * s->k * s->k * hankel1(0, s->k * R) - M_1_PI / R2;
   float c3 = -0.25f * s->k * s->k * logf(R) * M_1_PI;
-  
+
   return c1 * dpnu + c2 * drdudrdn + c3;
 }
 
@@ -393,17 +389,17 @@ complex float intN3_2D(Float2 x, void* state) {
 
 
 /* Computes elements of the Helmholtz N-Operator.
- * 
+ *
  * Parameters:
  *   k - the wavenumber of the problem.
  *   px, py - the point receiving radiation from the boundary.
  *   ax, ay - the starting point of the boundary element being integrated over.
  *   bx, by - the end point of the bondary element being integrated over.
  *   pOnElement - a boolean indicating if p is on the boundary element being integrated.
- * 
+ *
  *   Returns:
  *     The results of the integration, which are typically a complex
- *     number are stored in those two floats, the first being the Real-, the 
+ *     number are stored in those two floats, the first being the Real-, the
  *     second being the Imaginary component of that complex value.
  */
 complex float computeN_2D(float k, Float2 p, Float2 normal_p, Float2 a, Float2 b, bool pOnElement) {
@@ -449,7 +445,7 @@ typedef struct {
 
   float r;
   float z;
-  
+
   IntRule2D semiCircleRule;
 
   int direction;
@@ -469,7 +465,7 @@ complex float integrateGeneratorL_RAD(Float2 x, void *pState) {
 
   pS->r = x.x;
   pS->z = x.y;
-  
+
   return complexLineIntegral(integrateSemiCircleL_RAD, pS, pS->semiCircleRule) * pS->r / (2.0f * M_PI);
 }
 
@@ -486,7 +482,7 @@ complex float integrateGeneratorL0_RAD(Float2 x, void *pState) {
 
   pS->r = x.x;
   pS->z = x.y;
-  
+
   return complexLineIntegral(integrateSemiCircleL0_RAD, pS, pS->semiCircleRule) * pS->r / (2.0f * M_PI);
 }
 
@@ -503,19 +499,19 @@ complex float integrateGeneratorL0pOn_RAD(Float2 x, void *pState) {
 
   pS->r = x.x;
   pS->z = x.y;
-  
+
   return complexLineIntegral(integrateSemiCircleL0pOn_RAD, pS, pS->semiCircleRule) * pS->r / (2.0f * M_PI);
 }
 
 /* Computes elements of the Helmholtz L-Operator radially symetrical cases.
- * 
+ *
  * Parameters:
  *   k - the wavenumber of the problem.
  *   px, py - the point receiving radiation from the boundary.
  *   ar, az - the starting point of the boundary element being integrated over.
  *   br, bz - the end point of the bondary element being integrated over.
  *   pOnElement - a boolean indicating if p is on the boundary element being integrated.
- * 
+ *
  *   Returns:
  *     The complex-valued result of the integration.
  */
@@ -535,7 +531,7 @@ complex float computeL_RAD(float k, Float2 p, Float2 a, Float2 b, bool pOnElemen
   state.p.x = p.x;
   state.p.y = 0.0f;
   state.p.z = p.y;
-  
+
   if (pOnElement) {
     assert(8 * 2 * nSections < MAX_LINE_RULE_SAMPLES);
     IntRule2D semiCircleRule = {8 * 2 * nSections, aSemiCircleX, aSemiCircleY, aSemiCircleW};
@@ -588,7 +584,7 @@ complex float integrateGeneratorM_RAD(Float2 x, void *pState) {
 
   pS->r = x.x;
   pS->z = x.y;
-  
+
   return complexLineIntegral(integrateSemiCircleM_RAD, pS, pS->semiCircleRule) * pS->r / (2.0f * M_PI);
 }
 
@@ -607,20 +603,20 @@ complex float integrateGeneratorMpOn_RAD(Float2 x, void *pState) {
 
   pS->r = x.x;
   pS->z = x.y;
-  
+
   return complexLineIntegral(integrateSemiCircleMpOn_RAD, pS, pS->semiCircleRule) * pS->r / (2.0f * M_PI);
 }
 
 
 /* Computes elements of the Helmholtz M-Operator radially symetrical cases.
- * 
+ *
  * Parameters:
  *   k - the wavenumber of the problem.
  *   px, py - the point receiving radiation from the boundary.
  *   ar, az - the starting point of the boundary element being integrated over.
  *   br, bz - the end point of the bondary element being integrated over.
  *   pOnElement - a boolean indicating if p is on the boundary element being integrated.
- * 
+ *
  *   Returns:
  *     The complex-valued result of the integration.
  */
@@ -689,7 +685,7 @@ complex float integrateGeneratorMt_RAD(Float2 x, void *pState) {
 
   pS->r = x.x;
   pS->z = x.y;
-  
+
   return complexLineIntegral(integrateSemiCircleMt_RAD, pS, pS->semiCircleRule) * pS->r / (2.0f * M_PI);
 }
 
@@ -707,19 +703,19 @@ complex float integrateGeneratorMtpOn_RAD(Float2 x, void *pState) {
 
   pS->r = x.x;
   pS->z = x.y;
-  
+
   return complexLineIntegral(integrateSemiCircleMtpOn_RAD, pS, pS->semiCircleRule) * pS->r / (2.0f * M_PI);
 }
 
 /* Computes elements of the Helmholtz Mt-Operator radially symetrical cases.
- * 
+ *
  * Parameters:
  *   k - the wavenumber of the problem.
  *   px, py - the point receiving radiation from the boundary.
  *   ar, az - the starting point of the boundary element being integrated over.
  *   br, bz - the end point of the bondary element being integrated over.
  *   pOnElement - a boolean indicating if p is on the boundary element being integrated.
- * 
+ *
  *   Returns:
  *     The complex-valued result of the integration.
  */
@@ -797,7 +793,7 @@ complex float integrateGeneratorN_RAD(Float2 x, void *pState) {
 
   pS->r = x.x;
   pS->z = x.y;
-  
+
   return complexLineIntegral(integrateSemiCircleN_RAD, pS, pS->semiCircleRule) * pS->r / (2.0f * M_PI);
 }
 
@@ -826,10 +822,10 @@ complex float integrateGeneratorNpOn_RAD(Float2 x, void *pState) {
 
   pS->r = x.x;
   pS->z = x.y;
-  
+
   return complexLineIntegral(integrateSemiCircleNpOn_RAD, pS, pS->semiCircleRule) * pS->r / (2.0f * M_PI);
-}                
-		   
+}
+
 complex float integrateSemiCircleN0pOn_RAD(Float2 x, void *pState) {
   RadIntL * pS = (RadIntL *) pState;
   Float3 q  = {pS->r * x.x, pS->r * x.y, pS->z};
@@ -849,7 +845,7 @@ complex float integrateGeneratorN0pOn_RAD(Float2 x, void *pState) {
 
   pS->r = x.x;
   pS->z = x.y;
-  
+
   return complexLineIntegral(integrateSemiCircleN0pOn_RAD, pS, pS->semiCircleRule) * pS->r / (2.0f * M_PI);
 }
 
@@ -866,14 +862,14 @@ complex float complexConeIntegral(complex float(*integrand)(Float2, void*), void
 }
 
 /* Computes elements of the Helmholtz N-Operator radially symetrical cases.
- * 
+ *
  * Parameters:
  *   k - the wavenumber of the problem.
  *   px, py - the point receiving radiation from the boundary.
  *   ar, az - the starting point of the boundary element being integrated over.
  *   br, bz - the end point of the bondary element being integrated over.
  *   pOnElement - a boolean indicating if p is on the boundary element being integrated.
- * 
+ *
  *   Returns:
  *     The complex-valued result of the integration.
  */
@@ -917,7 +913,7 @@ complex float computeN_RAD(float k, Float2 p, Float2 vec_p, Float2 a, Float2 b, 
       state.direction = -direction;
       nSections = (int)(b.x * sqrtf(2.0f) / lenAB) + 1;
       complex float coneValB = complexConeIntegral(integrateGeneratorN0pOn_RAD, &state, intRule, b, tip_b, nSections);
-      
+
       return -(coneValA + coneValB);
     } else {
       return 0.0f;
@@ -970,7 +966,7 @@ complex float intL3_3D(Float3 x, void* state) {
 }
 
  /* Computes elements of the Helmholtz L-Operator for 3D.
- * 
+ *
  * Parameters:
  *   k - the wavenumber of the problem.
  *   px, py, pz - the point receiving radiation from the boundary.
@@ -978,16 +974,16 @@ complex float intL3_3D(Float3 x, void* state) {
  *   bx, by, bz - the second vertex of ccw triangle.
  *   cx, cy, cz - the third vertex of ccw t riangle.
  *   pOnElement - a boolean indicating if p is on the boundary element being integrated.
- * 
+ *
  *   Returns:
  *     The results of the integration, which are typically a complex
- *     number are stored in those two floats, the first being the Real-, the 
+ *     number are stored in those two floats, the first being the Real-, the
  *     second being the Imaginary component of that complex value.
  */
 complex float computeL_3D(float k, Float3 p, Float3 a, Float3 b, Float3 c, bool pOnElement) {
   IntL3D stat = {k, p};
   IntRule2D intRule = {7, aX_2D, aY_2D, aW_2D};
-  
+
   if (pOnElement) {
     if (k == 0.0f) {
       Float3 ab = sub3f(b, a);
@@ -1002,7 +998,7 @@ complex float computeL_3D(float k, Float3 p, Float3 a, Float3 b, Float3 c, bool 
 
       float ar0[3] = {norm3f(ap), norm3f(bp), norm3f(cp)};
       float ara[3] = {ar0[1], ar0[2], ar0[0]};
-      
+
       float result = 0.0f;
       for (int i = 0; i < 3; ++i) {
 	float r0 = ar0[i];
@@ -1034,7 +1030,7 @@ complex float computeL_3D(float k, Float3 p, Float3 a, Float3 b, Float3 c, bool 
     }
   }
 }
-        
+
 void ComputeL_3D(float k, Float3 p, Float3 a, Float3 b, Float3 c, bool pOnElement, Complex * pResult) {
   complex float z = computeL_3D(k, p, a, b, c, pOnElement);
   pResult->re = crealf(z);
@@ -1060,23 +1056,23 @@ complex float intM2_3D(Float3 x, void* state) {
 }
 
  /* Computes elements of the Helmholtz M-Operator.
- * 
+ *
  * Parameters:
  *   k - the wavenumber of the problem.
  *   px, py, pz - the point receiving radiation from the boundary.
  *   a, b, c - the three vertices forming the triangle being integrated over.
  *   pOnElement - a boolean indicating if p is on the boundary element being integrated.
- * 
+ *
  *   Returns:
  *     The results of the integration, which are typically a complex
- *     number are stored in those two floats, the first being the Real-, the 
+ *     number are stored in those two floats, the first being the Real-, the
  *     second being the Imaginary component of that complex value.
  */
 complex float computeM_3D(float k, Float3 p, Float3 a, Float3 b, Float3 c, bool pOnElement) {
   IntL3D stat = {k, p};
   stat.normal_q = Normal3D(a, b, c);
   IntRule2D intRule = {7, aX_2D, aY_2D, aW_2D};
-  
+
   if (pOnElement) {
     return 0.0f;
   } else {
@@ -1114,24 +1110,24 @@ complex float intMt2_3D(Float3 x, void* state) {
 }
 
  /* Computes elements of the Helmholtz Mt-Operator.
- * 
+ *
  * Parameters:
  *   k - the wavenumber of the problem.
  *   px, py, pz - the point receiving radiation from the boundary.
  *   vec_p - the surface normal in p.
  *   a, b, c - the three vertices forming the triangle being integrated over.
  *   pOnElement - a boolean indicating if p is on the boundary element being integrated.
- * 
+ *
  *   Returns:
  *     The results of the integration, which are typically a complex
- *     number are stored in those two floats, the first being the Real-, the 
+ *     number are stored in those two floats, the first being the Real-, the
  *     second being the Imaginary component of that complex value.
  */
 complex float computeMt_3D(float k, Float3 p, Float3 vec_p, Float3 a, Float3 b, Float3 c, bool pOnElement) {
   IntL3D stat = {k, p};
   stat.normal_p = vec_p;
   IntRule2D intRule = {7, aX_2D, aY_2D, aW_2D};
-  
+
   if (pOnElement) {
     return 0.0f;
   } else {
@@ -1189,17 +1185,17 @@ complex float intN2_3D(Float3 x, void* state) {
 }
 
 /* Computes elements of the Helmholtz N-Operator.
- * 
+ *
  * Parameters:
  *   k - the wavenumber of the problem.
  *   px, py, pz - the point receiving radiation from the boundary.
  *   vec_p - the surface normal in point p.
  *   a, b, c - the vertices of the trinagle being integrated over.
  *   pOnElement - a boolean indicating if p is on the boundary element being integrated.
- * 
+ *
  *   Returns:
  *     The results of the integration, which are typically a complex
- *     number are stored in those two floats, the first being the Real-, the 
+ *     number are stored in those two floats, the first being the Real-, the
  *     second being the Imaginary component of that complex value.
  */
 complex float computeN_3D(float k, Float3 p, Float3 vec_p, Float3 a, Float3 b, Float3 c, bool pOnElement) {
@@ -1222,7 +1218,7 @@ complex float computeN_3D(float k, Float3 p, Float3 vec_p, Float3 a, Float3 b, F
 
       float ar0[3] = {norm3f(ap), norm3f(bp), norm3f(cp)};
       float ara[3] = {ar0[1], ar0[2], ar0[0]};
-      
+
       float result = 0.0f;
       for (int i = 0; i < 3; ++i) {
 	float r0 = ar0[i];
@@ -1236,7 +1232,7 @@ complex float computeN_3D(float k, Float3 p, Float3 vec_p, Float3 a, Float3 b, F
 	float A = acosf((ra*ra + r0*r0 - opp*opp) / (2.0f * ra * r0));
 	float B = atanf(ra * sinf(A) / (r0 - ra * cosf(A)));
 	result += (cosf(A + B) - cosf(B)) / (r0 * sinf(B));
-      }   
+      }
       return result / (4.0f * M_PI);
     } else {
       complex float N0 = computeN_3D(0.0f, p, vec_p, a, b, c, true);
