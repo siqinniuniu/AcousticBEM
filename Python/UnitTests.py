@@ -67,22 +67,22 @@ class TestHankel(unittest.TestCase):
 
     def testHankel01(self):
         H1scipy = hankel1(0, 1.0)
-        H1gsl = IH.hankel1(0, 1.0)
+        H1gsl = IH2C.hankel1(0, 1.0)
         self.assertAlmostEqual(H1scipy, H1gsl, msg = "{} != {}".format(H1scipy, H1gsl))
 
     def testHankel02(self):
         H1scipy = hankel1(0, 10.0)
-        H1gsl = IH.hankel1(0, 10.0)
+        H1gsl = IH2C.hankel1(0, 10.0)
         self.assertAlmostEqual(H1scipy, H1gsl, msg = "{} != {}".format(H1scipy, H1gsl))
 
     def testHankel03(self):
         H1scipy = hankel1(1, 1.0)
-        H1gsl = IH.hankel1(1, 1.0)
+        H1gsl = IH2C.hankel1(1, 1.0)
         self.assertAlmostEqual(H1scipy, H1gsl, msg = "{} != {}".format(H1scipy, H1gsl))
 
     def testHankel04(self):
         H1scipy = hankel1(1, 10.0)
-        H1gsl = IH.hankel1(1, 10.0)
+        H1gsl = IH2C.hankel1(1, 10.0)
         self.assertAlmostEqual(H1scipy, H1gsl, msg = "{} != {}".format(H1scipy, H1gsl))
 
 class TestComputeL(unittest.TestCase):
@@ -93,8 +93,8 @@ class TestComputeL(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = False
-        zPy = IH.InteriorHelmholtzSolver2D.ComputeL(k, p, a, b, pOnElement)
-        zC  = IH.InteriorHelmholtzSolver2D_C.ComputeL(k, p, a, b, pOnElement)
+        zPy = IH2.ComputeL(k, p, a, b, pOnElement)
+        zC  = IH2C.ComputeL(k, p, a, b, pOnElement)
         self.assertAlmostEqual(zPy, zC, msg = "{} != {}".format(zPy, zC))
 
     def testComputeL02(self):
@@ -103,8 +103,8 @@ class TestComputeL(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = False
-        zPy = IH.InteriorHelmholtzSolver2D.ComputeL(k, p, a, b, pOnElement)
-        zC  = IH.InteriorHelmholtzSolver2D_C.ComputeL(k, p, a, b, pOnElement)
+        zPy = IH2.ComputeL(k, p, a, b, pOnElement)
+        zC  = IH2C.ComputeL(k, p, a, b, pOnElement)
         self.assertAlmostEqual(zPy, zC, msg = "{} != {}".format(zPy, zC))
 
     def testComputeL03(self):
@@ -113,8 +113,8 @@ class TestComputeL(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = True
-        zPy = IH.InteriorHelmholtzSolver2D.ComputeL(k, p, a, b, pOnElement)
-        zC  = IH.InteriorHelmholtzSolver2D_C.ComputeL(k, p, a, b, pOnElement)
+        zPy = IH2.ComputeL(k, p, a, b, pOnElement)
+        zC  = IH2C.ComputeL(k, p, a, b, pOnElement)
         self.assertAlmostEqual(zPy, zC, msg = "{} != {}".format(zPy, zC))
 
     def testComputeL04(self):
@@ -123,8 +123,8 @@ class TestComputeL(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = True
-        zPy = IH.InteriorHelmholtzSolver2D.ComputeL(k, p, a, b, pOnElement)
-        zC  = IH.InteriorHelmholtzSolver2D_C.ComputeL(k, p, a, b, pOnElement)
+        zPy = IH2.ComputeL(k, p, a, b, pOnElement)
+        zC  = IH2C.ComputeL(k, p, a, b, pOnElement)
         self.assertAlmostEqual(zPy, zC, msg = "{} != {}".format(zPy, zC))
 
 class TestComputeM(unittest.TestCase):
@@ -135,8 +135,8 @@ class TestComputeM(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = False
-        zPy = IH.InteriorHelmholtzSolver2D.ComputeM(k, p, a, b, pOnElement)
-        zC  = IH.InteriorHelmholtzSolver2D_C.ComputeM(k, p, a, b, pOnElement)
+        zPy = IH2.ComputeM(k, p, a, b, pOnElement)
+        zC  = IH2C.ComputeM(k, p, a, b, pOnElement)
         self.assertAlmostEqual(zPy, zC, msg = "{} != {}".format(zPy, zC))
 
     def testComputeM02(self):
@@ -145,8 +145,8 @@ class TestComputeM(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = False
-        zPy = IH.InteriorHelmholtzSolver2D.ComputeM(k, p, a, b, pOnElement)
-        zC  = IH.InteriorHelmholtzSolver2D_C.ComputeM(k, p, a, b, pOnElement)
+        zPy = IH2.ComputeM(k, p, a, b, pOnElement)
+        zC  = IH2C.ComputeM(k, p, a, b, pOnElement)
         self.assertAlmostEqual(zPy, zC, msg = "{} != {}".format(zPy, zC))
 
     def testComputeM03(self):
@@ -155,8 +155,8 @@ class TestComputeM(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = True
-        zPy = IH.InteriorHelmholtzSolver2D.ComputeM(k, p, a, b, pOnElement)
-        zC  = IH.InteriorHelmholtzSolver2D_C.ComputeM(k, p, a, b, pOnElement)
+        zPy = IH2.ComputeM(k, p, a, b, pOnElement)
+        zC  = IH2C.ComputeM(k, p, a, b, pOnElement)
         self.assertAlmostEqual(zPy, zC, msg = "{} != {}".format(zPy, zC))
 
     def testComputeM04(self):
@@ -165,8 +165,8 @@ class TestComputeM(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = True
-        zPy = IH.InteriorHelmholtzSolver2D.ComputeM(k, p, a, b, pOnElement)
-        zC  = IH.InteriorHelmholtzSolver2D_C.ComputeM(k, p, a, b, pOnElement)
+        zPy = IH2.ComputeM(k, p, a, b, pOnElement)
+        zC  = IH2C.ComputeM(k, p, a, b, pOnElement)
         self.assertAlmostEqual(zPy, zC, msg = "{} != {}".format(zPy, zC))
 
 class TestComputeMt(unittest.TestCase):
@@ -178,8 +178,8 @@ class TestComputeMt(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = False
-        zPy = IH.InteriorHelmholtzSolver2D.ComputeMt(k, p, normal_p, a, b, pOnElement)
-        zC  = IH.InteriorHelmholtzSolver2D_C.ComputeMt(k, p, normal_p, a, b, pOnElement)
+        zPy = IH2.ComputeMt(k, p, normal_p, a, b, pOnElement)
+        zC  = IH2C.ComputeMt(k, p, normal_p, a, b, pOnElement)
         self.assertAlmostEqual(zPy, zC, msg = "{} != {}".format(zPy, zC))
 
     def testComputeMt02(self):
@@ -189,8 +189,8 @@ class TestComputeMt(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = False
-        zPy = IH.InteriorHelmholtzSolver2D.ComputeMt(k, p, normal_p, a, b, pOnElement)
-        zC  = IH.InteriorHelmholtzSolver2D_C.ComputeMt(k, p, normal_p, a, b, pOnElement)
+        zPy = IH2.ComputeMt(k, p, normal_p, a, b, pOnElement)
+        zC  = IH2C.ComputeMt(k, p, normal_p, a, b, pOnElement)
         self.assertAlmostEqual(zPy, zC, msg = "{} != {}".format(zPy, zC))
 
     def testComputeMt03(self):
@@ -200,8 +200,8 @@ class TestComputeMt(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = True
-        zPy = IH.InteriorHelmholtzSolver2D.ComputeMt(k, p, normal_p, a, b, pOnElement)
-        zC  = IH.InteriorHelmholtzSolver2D_C.ComputeMt(k, p, normal_p, a, b, pOnElement)
+        zPy = IH2.ComputeMt(k, p, normal_p, a, b, pOnElement)
+        zC  = IH2C.ComputeMt(k, p, normal_p, a, b, pOnElement)
         self.assertAlmostEqual(zPy, zC, msg = "{} != {}".format(zPy, zC))
 
     def testComputeMt04(self):
@@ -211,8 +211,8 @@ class TestComputeMt(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = True
-        zPy = IH.InteriorHelmholtzSolver2D.ComputeMt(k, p, normal_p, a, b, pOnElement)
-        zC  = IH.InteriorHelmholtzSolver2D_C.ComputeMt(k, p, normal_p, a, b, pOnElement)
+        zPy = IH2.ComputeMt(k, p, normal_p, a, b, pOnElement)
+        zC  = IH2C.ComputeMt(k, p, normal_p, a, b, pOnElement)
         self.assertAlmostEqual(zPy, zC, msg = "{} != {}".format(zPy, zC))
 
 class TestComputeN(unittest.TestCase):
@@ -224,8 +224,8 @@ class TestComputeN(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = False
-        zPy = IH.InteriorHelmholtzSolver2D.ComputeN(k, p, normal_p, a, b, pOnElement)
-        zC  = IH.InteriorHelmholtzSolver2D_C.ComputeN(k, p, normal_p, a, b, pOnElement)
+        zPy = IH2.ComputeN(k, p, normal_p, a, b, pOnElement)
+        zC  = IH2C.ComputeN(k, p, normal_p, a, b, pOnElement)
         self.assertAlmostEqual(zPy, zC, msg = "{} != {}".format(zPy, zC))
 
     def testComputeN02(self):
@@ -235,8 +235,8 @@ class TestComputeN(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = False
-        zPy = IH.InteriorHelmholtzSolver2D.ComputeN(k, p, normal_p, a, b, pOnElement)
-        zC  = IH.InteriorHelmholtzSolver2D_C.ComputeN(k, p, normal_p, a, b, pOnElement)
+        zPy = IH2.ComputeN(k, p, normal_p, a, b, pOnElement)
+        zC  = IH2C.ComputeN(k, p, normal_p, a, b, pOnElement)
         self.assertAlmostEqual(zPy, zC, 6, msg = "{} != {}".format(zPy, zC))
 
     def testComputeN(self):
@@ -246,8 +246,8 @@ class TestComputeN(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = True
-        zPy = IH.InteriorHelmholtzSolver2D.ComputeN(k, p, normal_p, a, b, pOnElement)
-        zC  = IH.InteriorHelmholtzSolver2D_C.ComputeN(k, p, normal_p, a, b, pOnElement)
+        zPy = IH2.ComputeN(k, p, normal_p, a, b, pOnElement)
+        zC  = IH2C.ComputeN(k, p, normal_p, a, b, pOnElement)
         self.assertAlmostEqual(zPy, zC, msg = "{} != {}".format(zPy, zC))
 
     def testComputeN04(self):
@@ -257,8 +257,8 @@ class TestComputeN(unittest.TestCase):
         a = np.array([0.0, 0.00], dtype=np.float32)
         b = np.array([0.0, 0.10], dtype=np.float32)
         pOnElement = True
-        zPy = IH.InteriorHelmholtzSolver2D.ComputeN(k, p, normal_p, a, b, pOnElement)
-        zC  = IH.InteriorHelmholtzSolver2D_C.ComputeN(k, p, normal_p, a, b, pOnElement)
+        zPy = IH2.ComputeN(k, p, normal_p, a, b, pOnElement)
+        zC  = IH2C.ComputeN(k, p, normal_p, a, b, pOnElement)
         # note, how accuracy here is reduced to only 3 digits after the decimal dot.
         # I don't believe this is because of buggy code but because of error accumulation
         # being different for the C and the Python codes.
