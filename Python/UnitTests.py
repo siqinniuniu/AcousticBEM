@@ -19,10 +19,11 @@ import unittest
 import numpy as np
 from scipy.special import hankel1
 
-import InteriorHelmholtzSolver2D as IH
-import InteriorHelmholtzSolver2D_C as IH
-import InteriorHelmholtzSolverRAD as RAD
-import InteriorHelmholtzSolver3D as IH3
+import HelmholtzIntegrals2D as IH
+import HelmholtzIntegrals2D_C as IH
+import HelmholtzIntegrals3D as IH3
+import HelmholtzIntegralsRAD as RAD
+
 
 class TestComplexQuadGenerator(unittest.TestCase):
 
@@ -36,7 +37,6 @@ class TestComplexQuadGenerator(unittest.TestCase):
 
 
 class TestCircularIntegratorPI(unittest.TestCase):
-
     def testCircularIntegrator01(self):
         circle = RAD.CircularIntegratorPi(1)
         def func(x):
@@ -51,6 +51,7 @@ class TestCircularIntegratorPI(unittest.TestCase):
         result = circle.integrate(func)
         self.assertAlmostEqual(result, np.pi, msg = "{} != {}".format(result, np.pi))
 
+
 class TestTriangleIntegrator(unittest.TestCase):
     def testComplexQuad(self):
         def func(x):
@@ -60,6 +61,7 @@ class TestTriangleIntegrator(unittest.TestCase):
         c = np.array([0, 0, 1], dtype=np.float32)
         result = IH3.InteriorHelmholtzSolver3D.ComplexQuad(func, a, b, c)
         self.assertAlmostEqual(result, 0.5, msg = "{} != {}".format(result, 0.5))
+
 
 class TestHankel(unittest.TestCase):
 
