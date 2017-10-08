@@ -1,8 +1,8 @@
 libhelmholtz.so: Operators.o
-	gcc Operators.o -shared -o libhelmholtz.so
+	gcc Operators.o -shared -o libhelmholtz.so -lm
 
 Operators.o: Operators.c
-	gcc -c -fPIC Operators.c -o Operators.o
+	gcc -c -fPIC -std=c99 Operators.c -o Operators.o
 
 UnitTests: UnitTests.o Operators.o CuTest.o
 	gcc Operators.o UnitTests.o CuTest.o -lm -o UnitTests
