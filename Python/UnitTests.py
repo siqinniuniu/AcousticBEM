@@ -19,8 +19,8 @@ import unittest
 import numpy as np
 from scipy.special import hankel1
 
-import HelmholtzIntegrals2D as IH
-import HelmholtzIntegrals2D_C as IH
+import HelmholtzIntegrals2D as IH2
+import HelmholtzIntegrals2D_C as IH2C
 import HelmholtzIntegrals3D as IH3
 import HelmholtzIntegralsRAD as RAD
 
