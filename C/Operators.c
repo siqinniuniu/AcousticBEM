@@ -15,13 +15,14 @@
  * You should have received a copy of the GNU General Public License           *
  * along with AcousticBEM.  If not, see <http://www.gnu.org/licenses/>.        *
  * --------------------------------------------------------------------------- */
+#include "Operators.h"
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <math.h>
 #include <complex.h>
 #include <assert.h>
 
-#include "Operators.h"
 
 #define MAX_LINE_RULE_SAMPLES 2048
 
