@@ -1,5 +1,5 @@
 AEBEM2: AEBEM2.o AEBEM2_T.o GEOM2D.o H2LC.o CGLS.o FNHANK.o
-	gfortran -L../fgsl -o AEBEM2 AEBEM2.o AEBEM2_T.o GEOM2D.o H2LC.o CGLS.o FNHANK.o -lfgsl -lgsl -lgslcblas
+	gfortran -L../gsl/lib -o AEBEM2 AEBEM2.o AEBEM2_T.o GEOM2D.o H2LC.o CGLS.o FNHANK.o -lfgsl -lgsl -lgslcblas
 
 AEBEM2.o: AEBEM2.FOR
 	gfortran -c AEBEM2.FOR
@@ -17,7 +17,7 @@ CGLS.o: ../SHARED/CGLS.FOR
 	gfortran -c ../SHARED/CGLS.FOR
 
 FNHANK.o: ../SHARED/FNHANK.FOR
-	gfortran -I../fgsl -c ../SHARED/FNHANK.FOR
+	gfortran -I../gsl/include/fgsl -c ../SHARED/FNHANK.FOR
 
 clean:
 	rm AEBEM2 AEBEM2.OUT AEBEM2.o AEBEM2_T.o GEOM2D.o H2LC.o CGLS.o FNHANK.o *~
