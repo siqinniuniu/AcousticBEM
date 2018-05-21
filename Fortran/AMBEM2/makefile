@@ -1,5 +1,5 @@
 AMBEM2: AMBEM2.o AMBEM2_T.o GEOM2D.o H2LC.o CGLS.o INTEIG.o CGEIG.o FNHANK.o
-	gfortran -L../fgsl -o AMBEM2 AMBEM2.o AMBEM2_T.o GEOM2D.o H2LC.o CGLS.o INTEIG.o CGEIG.o FNHANK.o -lfgsl -lgsl -lgslcblas
+	gfortran -L../gsl/lib -o AMBEM2 AMBEM2.o AMBEM2_T.o GEOM2D.o H2LC.o CGLS.o INTEIG.o CGEIG.o FNHANK.o -lfgsl -lgsl -lgslcblas
 
 AMBEM2.o: AMBEM2.FOR
 	gfortran -c AMBEM2.FOR
@@ -23,7 +23,7 @@ CGEIG.o: ../SHARED/CGEIG.FOR
 	gfortran -c ../SHARED/CGEIG.FOR
 
 FNHANK.o: ../SHARED/FNHANK.FOR
-	gfortran -I../fgsl -c ../SHARED/FNHANK.FOR
+	gfortran -I../gsl/include/fgsl -c ../SHARED/FNHANK.FOR
 
 clean:
 	rm AMBEM2 AMBEM2.OUT AMBEM2.o AMBEM2_T.o GEOM2D.o H2LC.o CGLS.o INTEIG.o CGEIG.o FNHANK.o *~

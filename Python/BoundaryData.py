@@ -26,17 +26,17 @@ class BoundaryCondition(object):
 
 class BoundaryIncidence(object):
     def __init__(self, size):
-        self.phi = np.empty(size, dtype = np.complex64);
-        self.v   = np.empty(size, dtype = np.complex64);
-        
+        self.phi = np.empty(size, dtype = np.complex64)
+        self.v   = np.empty(size, dtype = np.complex64)
+
 class BoundarySolution(object):
-    
+
     def __init__(self, parent, k, aPhi, aV):
         self.parent = parent
         self.k      = k
         self.aPhi   = aPhi
         self.aV     = aV
-    
+
     def __repr__(self):
         result = "Solution2D("
         result += "parent = " + repr(self.parent) + ", "
@@ -44,7 +44,7 @@ class BoundarySolution(object):
         result += "aPhi = " + repr(self.aPhi) + ", "
         result += "aV = " + repr(self.aV) + ")"
         return result
-    
+
     def __str__(self):
         res =  "Density of medium:      {} kg/m^3\n".format(self.parent.density)
         res += "Speed of sound:         {} m/s\n".format(self.parent.c)
@@ -59,7 +59,6 @@ class BoundarySolution(object):
         return res
 
     def radiationRatio(self):
-        solver = self.parent
         power = 0.0
         bpower = 0.0
         for i in range(self.aPhi.size):
