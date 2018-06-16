@@ -126,21 +126,21 @@ class HelmholtzSolver(object):
 
 
 def printInteriorSolution(solution, aPhiInterior):
-    print "\nSound pressure at the sample points\n"
-    print "index          Potential                    Pressure               Magnitude         Phase\n"
+    print("\nSound pressure at the sample points\n")
+    print("index          Potential                    Pressure               Magnitude         Phase\n")
     for i in range(aPhiInterior.size):
         pressure = soundPressure(solution.k, aPhiInterior[i], c=solution.parent.c, density=solution.parent.density)
         magnitude = SoundMagnitude(pressure)
         phase = SignalPhase(pressure)
-        print "{:5d}  {: 1.4e}+ {: 1.4e}i   {: 1.4e}+ {: 1.4e}i    {: 1.4e} dB       {:1.4f}".format( \
-            i+1, aPhiInterior[i].real, aPhiInterior[i].imag, pressure.real, pressure.imag, magnitude, phase)
+        print("{:5d}  {: 1.4e}+ {: 1.4e}i   {: 1.4e}+ {: 1.4e}i    {: 1.4e} dB       {:1.4f}".format( \
+            i+1, aPhiInterior[i].real, aPhiInterior[i].imag, pressure.real, pressure.imag, magnitude, phase))
 
 def printInteriorSolution(solution, aPhiInterior):
-    print "\nSound pressure at the sample points\n"
-    print "index          Potential                    Pressure               Magnitude         Phase\n"
+    print("\nSound pressure at the sample points\n")
+    print("index          Potential                    Pressure               Magnitude         Phase\n")
     for i in range(aPhiInterior.size):
         pressure = soundPressure(solution.k, aPhiInterior[i], c=solution.parent.c, density=solution.parent.density)
         magnitude = SoundMagnitude(pressure)
         phase = SignalPhase(pressure)
-        print "{:5d}  {: 1.4e}+ {: 1.4e}i   {: 1.4e}+ {: 1.4e}i    {: 1.4e} dB       {:1.4f}".format( \
-            i+1, aPhiInterior[i].real, aPhiInterior[i].imag, pressure.real, pressure.imag, magnitude, phase)
+        print("{:5d}  {: 1.4e}+ {: 1.4e}i   {: 1.4e}+ {: 1.4e}i    {: 1.4e} dB       {:1.4f}".format( \
+            i+1, aPhiInterior[i].real, aPhiInterior[i].imag, pressure.real, pressure.imag, magnitude, phase))
