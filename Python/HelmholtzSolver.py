@@ -21,23 +21,12 @@ from Geometry import *
 
 class HelmholtzSolver(object):
     def __init__(self, aVertex = None, aElement = None, c = 344.0, density = 1.205):
-        assert not (aVertex is None), "Cannot construct InteriorHelmholtzProblem2D without valid vertex array."
+        assert not (aVertex is None), "Cannot construct HelmholtzSolver without valid vertex array."
         self.aVertex = aVertex
-        assert not (aElement is None), "Cannot construct InteriorHelmholtzProblem2D without valid element array."
+        assert not (aElement is None), "Cannot construct HelmholtzSolver without valid element array."
         self.aElement = aElement
         self.c       = c
         self.density = density
-
-        '''
-        # compute the centers of the discrete elements (depending on kind, i.e line segment or triangle).
-        # The solver computes the velocity potential at at these center points. 
-        if (self.aElement.shape[1] ==  2):
-            self.aCenters = 0.5 * (self.aVertex[self.aElement[:, 0]] + self.aVertex[aElement[:, 1]])
-        elif (self.aElement.shape[1] == 3):
-            self.aCenters = 1.0/3.0 * (self.aVertex[self.aElement[:, 0]] +\
-                                       self.aVertex[self.aElement[:, 1]] +\
-                                       self.aVertex[self.aElement[:, 2]])
-        '''
 
     def __repr__(self):
         result = "HelmholtzSolover("
