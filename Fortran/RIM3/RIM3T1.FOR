@@ -230,7 +230,8 @@ C     Velocity potential phi
 C  Velocity (v) [standard unit: metres per second (and phase)]
 C   At the centres of the elements 
       COMPLEX*16 PIV(MAXTEST,MAXNPI)
-
+      REAL*8 SINTY(MAXTEST,MAXNPI)
+      
 C  Counter through the x,y coordinates
       INTEGER    ICOORD
 
@@ -399,13 +400,31 @@ C  condition and each related input function f and at each point.
           PRESSURE=CIMAG*RHOVAL(ITEST)*OMEGA*PIPHI(ISP)
           PIPRESS(ITEST,ISP)=PRESSURE
           PIV(ITEST,ISP)=PIVEL(ISP)
+          SINTY(ITEST,ISP)=
+     *         DBLE(CONJG(PRESSURE)*PIVEL(ISP))/TWO
+
 520     CONTINUE
 
 
 C Output the solutions
 
 C  Formats for output
+ 2850   FORMAT(5X,'index',7X,'Potential',19X,'Pressure',24X,
+     *       'Velocity',17X,'Intensity'/)
+ 2860   FORMAT(4X,I4,2X,E10.4,'+ ',E10.4,' i    ',
+     *       E10.4, '+ ',E10.4,' i    ',4X,
+     *       E10.4, '+ ',E10.4,7X,F10.4)
         WRITE(20,*) 'k = ',KVAL(ITEST)
+        WRITE(20,2850)
+        WRITE(20,*)
+C      Loop(ISP) through the points on the boundary
+        DO 2030 ISP=1,NPIP
+C       Output the sound pressure, velocity and intensity at each point
+          WRITE(20,2860) ISP,DBLE(PIPHIVAL(ITEST,ISP)),
+     *     AIMAG(PIPHIVAL(ITEST,ISP)),DBLE(PIPRESS(ITEST,ISP)),
+     *     AIMAG(PIPRESS(ITEST,ISP)),DBLE(PIV(ITEST,ISP)),
+     *     AIMAG(PIV(ITEST,ISP)), SINTY(ITEST, ISP)
+2030    CONTINUE
         WRITE(20,*) '   x-coordinate  real phi     imaginary phi'
         DO 600 IPE=1,NPE
           WRITE(20,999) PEXT(IPE,1),DBLE(PEPHI(IPE)),DIMAG(PEPHI(IPE))
