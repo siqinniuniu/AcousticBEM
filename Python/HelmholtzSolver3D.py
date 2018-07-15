@@ -17,6 +17,7 @@
 # ---------------------------------------------------------------------------
 from HelmholtzSolver import *
 from Geometry import *
+from numpy.linalg import norm
 
 bOptimized = True
 if bOptimized:
@@ -29,27 +30,30 @@ else:
 class HelmholtzSolver3D(HelmholtzSolver):
     def __init__(self, *args, **kwargs):
         super(HelmholtzSolver3D, self).__init__(*args, **kwargs)
-        self.aCenters = 1.0/3.0 * (self.aVertex[self.aElement[:, 0]] +\
-                                   self.aVertex[self.aElement[:, 1]] +\
-                                   self.aVertex[self.aElement[:, 2]])
+        self.aCenters = (self.aVertex[self.aElement[:, 0]] +\
+                         self.aVertex[self.aElement[:, 1]] +\
+                         self.aVertex[self.aElement[:, 2]]) / 3.0
         # area of the boundary alements
         self.aArea = np.empty(self.aElement.shape[0], dtype=np.float32)
+        self.aNormals = np.empty((self.aElement.shape[0], 3), dtype=np.float32)
         for i in range(self.aArea.size):
             a = self.aVertex[self.aElement[i, 0], :]
             b = self.aVertex[self.aElement[i, 1], :]
             c = self.aVertex[self.aElement[i, 2], :]
-            self.aArea[i] = 0.5 * np.linalg.norm(np.cross(b-a, c-a))
+            ab = b - a
+            ac = c - a
+            vNormal = np.cross(ab, ac)
+            nNorm = norm(vNormal)
+            self.aNormals[i] = vNormal / nNorm
+            self.aArea[i] = 0.5 * nNorm
                                   
     def computeBoundaryMatrices(self, k, mu, orientation):
         A = np.empty((self.aElement.shape[0], self.aElement.shape[0]), dtype=complex)
         B = np.empty(A.shape, dtype=complex)
 
         for i in range(self.aElement.shape[0]):
-            pa = self.aVertex[self.aElement[i, 0]]
-            pb = self.aVertex[self.aElement[i, 1]]
-            pc = self.aVertex[self.aElement[i, 2]]
-            p = (pa + pb + pc) / 3.0
-            centerNormal = Normal3D(pa, pb, pc)
+            p = self.aCenters[i]
+            centerNormal = self.aNormals[i]
             for j in range(self.aElement.shape[0]):
                 qa = self.aVertex[self.aElement[j, 0]]
                 qb = self.aVertex[self.aElement[j, 1]]
