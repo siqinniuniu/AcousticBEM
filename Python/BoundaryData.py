@@ -58,6 +58,12 @@ class BoundarySolution(object):
                     self.aV[i].real, self.aV[i].imag, intensity)
         return res
 
+    def pressure(self):
+        return soundPressure(self.k, self.aPhi, c=self.parent.c, density=self.parent.density)
+
+    def pressureDecibell(self):
+        return SoundMagnitude(self.pressure())
+    
     def radiationRatio(self):
         power = 0.0
         bpower = 0.0
