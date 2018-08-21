@@ -34,5 +34,5 @@ CGLS.o: ../SHARED/CGLS.FOR
 	gfortran -c ../SHARED/CGLS.FOR
 
 clean:
-	rm *.o BERIM3T BERIMAT *~
+	rm *.o BERIM3T BERIM3.OUT BERIMAT BERIMA.OUT *~
 

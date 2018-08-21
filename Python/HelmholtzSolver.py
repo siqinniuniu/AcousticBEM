@@ -20,13 +20,11 @@ from BoundaryData import *
 from Geometry import *
 
 class HelmholtzSolver(object):
-    def __init__(self, aVertex = None, aElement = None, c = 344.0, density = 1.205):
-        assert not (aVertex is None), "Cannot construct HelmholtzSolver without valid vertex array."
-        self.aVertex = aVertex
-        assert not (aElement is None), "Cannot construct HelmholtzSolver without valid element array."
+    def __init__(self, aVertex, aElement, c = 344.0, density = 1.205):
+        self.aVertex  = aVertex
         self.aElement = aElement
-        self.c       = c
-        self.density = density
+        self.c        = c
+        self.density  = density
 
     def __repr__(self):
         result = "HelmholtzSolover("
@@ -114,22 +112,22 @@ class HelmholtzSolver(object):
         return x, y
 
 
-def printSolution(solution, aSamplePoints):
+def printSolution(solution, pPhi):
     print("\nSound pressure at the sample points\n")
     print("index          Potential                    Pressure               Magnitude         Phase\n")
     for i in range(aSamplePoints.size):
-        pressure = soundPressure(solution.k, aSamplePoints[i], c=solution.parent.c, density=solution.parent.density)
+        pressure = soundPressure(solution.k, aPhi[i], c=solution.parent.c, density=solution.parent.density)
         magnitude = SoundMagnitude(pressure)
         phase = SignalPhase(pressure)
         print("{:5d}  {: 1.4e}+ {: 1.4e}i   {: 1.4e}+ {: 1.4e}i    {: 1.4e} dB       {:1.4f}".format( \
-            i+1, aSamplePoints[i].real, aSamplePoints[i].imag, pressure.real, pressure.imag, magnitude, phase))
+            i+1, aPhi[i].real, aPhi[i].imag, pressure.real, pressure.imag, magnitude, phase))
 
-def printInteriorSolution(solution, aSamplePoints):
+def printInteriorSolution(solution, pPhi):
     print("\nSound pressure at the sample points\n")
     print("index          Potential                    Pressure               Magnitude         Phase\n")
-    for i in range(aSamplePoints.size):
-        pressure = soundPressure(solution.k, aSamplePoints[i], c=solution.parent.c, density=solution.parent.density)
+    for i in range(pPhi.size):
+        pressure = soundPressure(solution.k, pPhi[i], c=solution.parent.c, density=solution.parent.density)
         magnitude = SoundMagnitude(pressure)
         phase = SignalPhase(pressure)
         print("{:5d}  {: 1.4e}+ {: 1.4e}i   {: 1.4e}+ {: 1.4e}i    {: 1.4e} dB       {:1.4f}".format( \
-            i+1, aSamplePoints[i].real, aSamplePoints[i].imag, pressure.real, pressure.imag, magnitude, phase))
+            i+1, pPhi[i].real, pPhi[i].imag, pressure.real, pressure.imag, magnitude, phase))
