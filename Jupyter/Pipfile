@@ -5,9 +5,11 @@ name = "pypi"
 
 [packages]
 numpy = "*"
+scipy = "*"
 matplotlib = "*"
 jupyter = "*"
 bokeh = "*"
+joblib = "*"
 
 [dev-packages]
 

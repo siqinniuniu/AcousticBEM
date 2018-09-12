@@ -18,28 +18,33 @@
 import numpy as np
 from AcousticProperties import *
 
+
 class BoundaryCondition(object):
     def __init__(self, size):
         self.alpha = np.empty(size, dtype = np.complex64)
         self.beta  = np.empty(size, dtype = np.complex64)
         self.f     = np.empty(size, dtype = np.complex64)
 
+        
 class BoundaryIncidence(object):
     def __init__(self, size):
         self.phi = np.empty(size, dtype = np.complex64)
         self.v   = np.empty(size, dtype = np.complex64)
 
+        
 class BoundarySolution(object):
 
-    def __init__(self, parent, k, aPhi, aV):
+    def __init__(self, parent, boundaryCondition, k, aPhi, aV):
         self.parent = parent
+        self.boundaryCondidtion = boundaryCondition
         self.k      = k
         self.aPhi   = aPhi
         self.aV     = aV
 
     def __repr__(self):
-        result = "BoundarySolution("
+        result  = "BoundarySolution("
         result += "parent = " + repr(self.parent) + ", "
+        result += "boundaryCondition = " + repr(self.boundaryCondition) + ", "
         result += "k = " + repr(self.k) + ", "
         result += "aPhi = " + repr(self.aPhi) + ", "
         result += "aV = " + repr(self.aV) + ")"
@@ -65,14 +70,21 @@ class BoundarySolution(object):
         return SoundMagnitude(self.pressure())
     
     def radiationRatio(self):
-        power = 0.0
+        power  = 0.0
         bpower = 0.0
         for i in range(self.aPhi.size):
             pressure = soundPressure(self.k, self.aPhi[i], c=self.parent.c, density=self.parent.density)
-            power += AcousticIntensity(pressure, self.aV[i])
-            bpower += (self.parent.density * self.parent.c * np.abs(self.aV[i])**2)
+            power   += AcousticIntensity(pressure, self.aV[i])
+            bpower  += (self.parent.density * self.parent.c * np.abs(self.aV[i])**2)
         return 2 * power / bpower
 
+    def mechanicalImpedance(self):
+        Zm = 0.0
+        for p, a, v in zip(self.pressure(), self.parent.elementArea(), self.aV):
+            Zm += p * a / v
+        return Zm
+
+    
 class SampleSolution(object):
     def __init__(self, boundarySolution, aPhi):
         self.boundarySolution = boundarySolution

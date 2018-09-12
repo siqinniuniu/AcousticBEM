@@ -48,7 +48,7 @@ class HelmholtzSolver(object):
                                           boundaryCondition.alpha,
                                           boundaryCondition.beta,
                                           boundaryCondition.f)
-        return BoundarySolution(self, k, phi, v)
+        return BoundarySolution(self, boundaryCondition, k, phi, v)
 
     def solveInteriorBoundary(self, k, boundaryCondition, boundaryIncidence, mu = None):
         mu = mu or (1j / (k + 1))
@@ -64,7 +64,7 @@ class HelmholtzSolver(object):
                                           boundaryCondition.alpha,
                                           boundaryCondition.beta,
                                           boundaryCondition.f)
-        return BoundarySolution(self, k, phi, v)
+        return BoundarySolution(self, boundaryCondition, k, phi, v)
 
     
     @classmethod

@@ -21,12 +21,12 @@ from Geometry import *
 
 bOptimized = True
 if bOptimized:
-    from HelmholtzIntegrals3D_C import *
+    from HelmholtzIntegralsRAD_C import *
 else:
-    from HelmholtzIntegrals3D import *        
+    from HelmholtzIntegralsRAD import *        
 
 
-class RayleighCavitySolver3D(object):
+class RayleighCavitySolverRAD(object):
     def __init__(self, aVertex, aElement, nOpenElements, c = 344.0, density = 1.205):
         self.aVertex       = aVertex
         self.aElement      = aElement
@@ -34,8 +34,7 @@ class RayleighCavitySolver3D(object):
         self.c             = c
         self.density       = density
         self.aCenters      = (self.aVertex[self.aElement[:, 0]] +\
-                              self.aVertex[self.aElement[:, 1]] +\
-                              self.aVertex[self.aElement[:, 2]]) / 3.0
+                              self.aVertex[self.aElement[:, 1]]) / 2.0
 
     def __repr__(self):
         result = "RayleighCavitySolver3D("
@@ -72,10 +71,9 @@ class RayleighCavitySolver3D(object):
             for j in range(m+n):
                 qa = self.aVertex[self.aElement[j, 0]]
                 qb = self.aVertex[self.aElement[j, 1]]
-                qc = self.aVertex[self.aElement[j, 2]]
 
-                elementM  = ComputeM(k, p, qa, qb, qc, i==j)
-                elementL  = ComputeL(k, p, qa, qb, qc, i==j)
+                elementM  = ComputeM(k, p, qa, qb, i==j)
+                elementL  = ComputeL(k, p, qa, qb, i==j)
 
                 M[i, j]         = -elementM
                 M[i, j + m + n] =  elementL
@@ -98,10 +96,9 @@ class RayleighCavitySolver3D(object):
             for j in range(solution.aPhi.size):
                 qa = self.aVertex[self.aElement[j, 0]]
                 qb = self.aVertex[self.aElement[j, 1]]
-                qc = self.aVertex[self.aElement[j, 2]]
 
-                elementL  = ComputeL(solution.k, p, qa, qb, qc, False)
-                elementM  = ComputeM(solution.k, p, qa, qb, qc, False)
+                elementL  = ComputeL(solution.k, p, qa, qb, False)
+                elementM  = ComputeM(solution.k, p, qa, qb, False)
                 sum += elementL * solution.aV[j] - elementM * solution.aPhi[j]
             aPhi[i] = sum
 
@@ -116,9 +113,8 @@ class RayleighCavitySolver3D(object):
             for j in range(self.nOpenElements):
                 qa = self.aVertex[self.aElement[j, 0]]
                 qb = self.aVertex[self.aElement[j, 1]]
-                qc = self.aVertex[self.aElement[j, 2]]
 
-                elementL  = ComputeL(solution.k, p, qa, qb, qc, False)
+                elementL  = ComputeL(solution.k, p, qa, qb, False)
                 sum += -2.0 * elementL * solution.aV[j]
             aPhi[i] = sum
 
