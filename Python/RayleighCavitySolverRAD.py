@@ -35,6 +35,19 @@ class RayleighCavitySolverRAD(object):
         self.density       = density
         self.aCenters      = (self.aVertex[self.aElement[:, 0]] +\
                               self.aVertex[self.aElement[:, 1]]) / 2.0
+        # area of the boundary alements
+        self.aLength = np.empty(self.aElement.shape[0], dtype=np.float32)
+        self.aNormals = np.empty((self.aElement.shape[0], 2), dtype=np.float32)
+        for i in range(self.aLength.size):
+            a = self.aVertex[self.aElement[i, 0], :]
+            b = self.aVertex[self.aElement[i, 1], :]
+            ab = b - a
+            vNormal = np.empty_like(ab)
+            vNormal[0] = ab[1]
+            vNormal[1] = -ab[0]
+            nNorm = norm(vNormal)
+            self.aNormals[i] = vNormal / nNorm
+            self.aLength[i] = nNorm
 
     def __repr__(self):
         result = "RayleighCavitySolver3D("
@@ -46,6 +59,9 @@ class RayleighCavitySolverRAD(object):
 
     def numberOfElements(self):
         return self.aElement.shape[0]
+
+    def cavityNormals(self):
+        return self.aNormals[self.nOpenElements:self.numberOfElements(), :]
 
     def solveBoundary(self, k, boundaryCondition):
         M = self.computeBoundaryMatrix(k,
