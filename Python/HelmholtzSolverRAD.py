@@ -101,8 +101,8 @@ class HelmholtzSolverRAD(HelmholtzSolver):
         return aResult
         
     def solveInterior(self, solution, aIncidentInteriorPhi, aInteriorPoints):
-        return self.solveSamples(solution, aIncidentInteriorPhi, aInteriorPoints, 'interior')
+        return SampleSolution(solution, self.solveSamples(solution, aIncidentInteriorPhi, aInteriorPoints, 'interior'))
 
 
     def solveExterior(self, solution, aIncidentExteriorPhi, aExteriorPoints):
-        return self.solveSamples(solution, aIncidentExteriorPhi, aExteriorPoints, 'exterior')
+        return SampleSolution(solution, self.solveSamples(solution, aIncidentExteriorPhi, aExteriorPoints, 'exterior'))
