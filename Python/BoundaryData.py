@@ -63,6 +63,12 @@ class BoundarySolution(object):
                     self.aV[i].real, self.aV[i].imag, intensity)
         return res
 
+    def solveInterior(self, aIncidentInteriorPhi, aInteriorPoints):
+        return self.parent.solveInterior(self, aIncidentInteriorPhi, aInteriorPoints)
+    
+    def solveExterior(self, aIncidentExteriorPhi, aExteriorPoints):
+        return self.parent.solveExterior(self, aIncidentExteriorPhi, aExteriorPoints)
+
     def pressure(self):
         return soundPressure(self.k, self.aPhi, c=self.parent.c, density=self.parent.density)
 
