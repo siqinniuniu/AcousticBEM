@@ -20,13 +20,11 @@ from BoundaryData import *
 from Geometry import *
 
 class HelmholtzSolver(object):
-    def __init__(self, aVertex = None, aElement = None, c = 344.0, density = 1.205):
-        assert not (aVertex is None), "Cannot construct HelmholtzSolver without valid vertex array."
-        self.aVertex = aVertex
-        assert not (aElement is None), "Cannot construct HelmholtzSolver without valid element array."
+    def __init__(self, aVertex, aElement, c = 344.0, density = 1.205):
+        self.aVertex  = aVertex
         self.aElement = aElement
-        self.c       = c
-        self.density = density
+        self.c        = c
+        self.density  = density
 
     def __repr__(self):
         result = "HelmholtzSolover("
@@ -35,6 +33,25 @@ class HelmholtzSolver(object):
         result += "  c = " + repr(self.c) + ", "
         result += "  rho = " + repr(self.rho) + ")"
         return result
+
+    def numberOfElements(self):
+        return self.aElement.shape[0]
+
+    def dirichletBoundaryCondition(self):
+        """Returns a boundary contidition with alpha the 1-function and f and beta 0-functions."""
+        boundaryCondition = BoundaryCondition(self.numberOfElements())
+        boundaryCondition.alpha.fill(1.0)
+        boundaryCondition.beta.fill(0.0)
+        boundaryCondition.f.fill(1.0)
+        return boundaryCondition
+
+    def neumannBoundaryCondition(self):
+        """Returns a boundary contidition with f and alpha 0-functions and beta the 1-function."""
+        boundaryCondition = BoundaryCondition(self.numberOfElements())
+        boundaryCondition.alpha.fill(0.0)
+        boundaryCondition.beta.fill(1.0)
+        boundaryCondition.f.fill(1.0)
+        return boundaryCondition
 
     def solveExteriorBoundary(self, k, boundaryCondition, boundaryIncidence, mu = None):
         mu = mu or (1j / (k + 1))
@@ -50,7 +67,7 @@ class HelmholtzSolver(object):
                                           boundaryCondition.alpha,
                                           boundaryCondition.beta,
                                           boundaryCondition.f)
-        return BoundarySolution(self, k, phi, v)
+        return BoundarySolution(self, boundaryCondition, k, phi, v)
 
     def solveInteriorBoundary(self, k, boundaryCondition, boundaryIncidence, mu = None):
         mu = mu or (1j / (k + 1))
@@ -66,7 +83,7 @@ class HelmholtzSolver(object):
                                           boundaryCondition.alpha,
                                           boundaryCondition.beta,
                                           boundaryCondition.f)
-        return BoundarySolution(self, k, phi, v)
+        return BoundarySolution(self, boundaryCondition, k, phi, v)
 
     
     @classmethod
@@ -114,22 +131,22 @@ class HelmholtzSolver(object):
         return x, y
 
 
-def printSolution(solution, aSamplePoints):
+def printSolution(solution, pPhi):
     print("\nSound pressure at the sample points\n")
     print("index          Potential                    Pressure               Magnitude         Phase\n")
     for i in range(aSamplePoints.size):
-        pressure = soundPressure(solution.k, aSamplePoints[i], c=solution.parent.c, density=solution.parent.density)
+        pressure = soundPressure(solution.k, aPhi[i], c=solution.parent.c, density=solution.parent.density)
         magnitude = SoundMagnitude(pressure)
         phase = SignalPhase(pressure)
         print("{:5d}  {: 1.4e}+ {: 1.4e}i   {: 1.4e}+ {: 1.4e}i    {: 1.4e} dB       {:1.4f}".format( \
-            i+1, aSamplePoints[i].real, aSamplePoints[i].imag, pressure.real, pressure.imag, magnitude, phase))
+            i+1, aPhi[i].real, aPhi[i].imag, pressure.real, pressure.imag, magnitude, phase))
 
-def printInteriorSolution(solution, aSamplePoints):
+def printInteriorSolution(solution, pPhi):
     print("\nSound pressure at the sample points\n")
     print("index          Potential                    Pressure               Magnitude         Phase\n")
-    for i in range(aSamplePoints.size):
-        pressure = soundPressure(solution.k, aSamplePoints[i], c=solution.parent.c, density=solution.parent.density)
+    for i in range(pPhi.size):
+        pressure = soundPressure(solution.k, pPhi[i], c=solution.parent.c, density=solution.parent.density)
         magnitude = SoundMagnitude(pressure)
         phase = SignalPhase(pressure)
         print("{:5d}  {: 1.4e}+ {: 1.4e}i   {: 1.4e}+ {: 1.4e}i    {: 1.4e} dB       {:1.4f}".format( \
-            i+1, aSamplePoints[i].real, aSamplePoints[i].imag, pressure.real, pressure.imag, magnitude, phase))
+            i+1, pPhi[i].real, pPhi[i].imag, pressure.real, pressure.imag, magnitude, phase))

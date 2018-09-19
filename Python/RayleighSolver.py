@@ -27,13 +27,12 @@ else:
 
 
 class RayleighSolver(object):
-    def __init__(self, aVertex = None, aElement = None, c = 344.0, density = 1.205):
-        assert not (aVertex is None), "Cannot construct RayleighSolver without valid vertex array."
+    def __init__(self, aVertex, aElement, c = 344.0, density = 1.205):
         self.aVertex = aVertex
-        assert not (aElement is None), "Cannot construct RayleighSolver without valid element array."
         self.aElement = aElement
         self.c       = c
         self.density = density
+        self.aArea   = None
 
     def __repr__(self):
         result = "RayleighSolover("
@@ -43,93 +42,62 @@ class RayleighSolver(object):
         result += "  density = " + repr(self.density) + ")"
         return result
 
-    @classmethod
-    def SolveLinearEquation(cls, Ai, Bi, ci, alpha, beta, f):
-        A = np.copy(Ai)
-        B = np.copy(Bi)
-        c = np.copy(ci)
-
-        x = np.empty(c.size, dtype=np.complex)
-        y = np.empty(c.size, dtype=np.complex)
-
-        normA = np.linalg.norm(A, np.inf)
-        normB = np.linalg.norm(B, np.inf)
-        gamma = normB / normA
-        swapXY = np.empty(c.size, dtype=bool)
-        for i in range(c.size):
-            if np.abs(beta[i]) < gamma * np.abs(alpha[i]):
-                swapXY[i] = False
-            else:
-                swapXY[i] = True
-
-        for i in range(c.size):
-            if swapXY[i]:
-                for j in range(alpha.size):
-                    c[j] += f[i] * B[j,i] / beta[i]
-                    B[j, i] = -alpha[i] * B[j, i] / beta[i]
-            else:
-                for j in range(alpha.size):
-                    c[j] -= f[i] * A[j, i] / alpha[i]
-                    A[j, i] = -beta[i] * A[j, i] / alpha[i]
-
-        A -= B
-        y = np.linalg.solve(A, c)
-
-        for i in range(c.size):
-            if swapXY[i]:
-                x[i] = (f[i] - alpha[i] * y[i]) / beta[i]
-            else:
-                x[i] = (f[i] - beta[i] * y[i]) / alpha[i]
-
-        for i in range(c.size):
-            if swapXY[i]:
-                temp = x[i]
-                x[i] = y[i]
-                y[i] = temp
-
-        return x, y
+    def numberOfElements(self):
+        return self.aElement.shape[0]
 
     def solveBoundary(self, k, boundaryCondition):
-        assert boundaryCondition.f.size == self.aElement.shape[0]
-        M = self.computeBoundaryMatrix(k)
-        I = np.identity(self.aElement.shape[0], dtype=complex)
-        c = np.zeros(self.aElement.shape[0], dtype=complex)
-        phi, v = self.SolveLinearEquation(I, M, c,
-                                          boundaryCondition.alpha,
-                                          boundaryCondition.beta,
-                                          boundaryCondition.f)
+        assert boundaryCondition.f.size == self.numberOfElements()
+        M = self.computeBoundaryMatrix(k, boundaryCondition.alpha, boundaryCondition.beta)
+        n = self.numberOfElements()
+        b = np.zeros(2 * n, dtype=complex)
+        b[n: 2*n] = boundaryCondition.f
+        x = np.linalg.solve(M, b)
+        
+        return BoundarySolution(self, boundaryCondition, k, 
+                                x[0:self.numberOfElements()],
+                                x[self.numberOfElements():2*self.numberOfElements()])
 
-        return BoundarySolution(self, k, phi, v)
+    def elementArea(self):
+        if self.aArea is None:
+            self.aArea = np.empty(self.aElement.shape[0], dtype=np.float32)
+            for i in range(self.aArea.size):
+                a = self.aVertex[self.aElement[i, 0], :]
+                b = self.aVertex[self.aElement[i, 1], :]
+                c = self.aVertex[self.aElement[i, 2], :]
+                ab = b - a
+                ac = c - a
+                self.aArea[i] = 0.5 * norm(np.cross(ab, ac))
+        return self.aArea
 
     
 class RayleighSolver3D(RayleighSolver):
-    def __init__(self, *args, **kwargs):
-        super(RayleighSolver3D, self).__init__(*args, **kwargs)
+    def __init__(self,  aVertex, aElement, c = 344.0, density = 1.205):
+        super(RayleighSolver3D, self).__init__(aVertex, aElement, c, density)
         self.aCenters = (self.aVertex[self.aElement[:, 0]] +\
                          self.aVertex[self.aElement[:, 1]] +\
                          self.aVertex[self.aElement[:, 2]]) / 3.0
-        # area of the boundary alements
-        self.aArea = np.empty(self.aElement.shape[0], dtype=np.float32)
-        for i in range(self.aArea.size):
-            a = self.aVertex[self.aElement[i, 0], :]
-            b = self.aVertex[self.aElement[i, 1], :]
-            c = self.aVertex[self.aElement[i, 2], :]
-            self.aArea[i] = 0.5 * np.linalg.norm(np.cross(b-a, c-a))
                                   
-    def computeBoundaryMatrix(self, k):
-        # create NxN-Matrix where N is number of boundary elements
-        A = np.empty((self.aElement.shape[0], self.aElement.shape[0]), dtype=complex)
+    def computeBoundaryMatrix(self, k, alpha, beta):
+        n = self.numberOfElements()
+        M = np.zeros((2*n, 2*n), dtype=np.complex64)
 
-        for i in range(self.aElement.shape[0]):
-            for j in range(self.aElement.shape[0]):
+        # Compute the top half of the "big matrix".
+        for i in range(n):
+            p = self.aCenters[i]
+            for j in range(n):
                 qa = self.aVertex[self.aElement[j, 0]]
                 qb = self.aVertex[self.aElement[j, 1]]
                 qc = self.aVertex[self.aElement[j, 2]]
 
-                elementL  = ComputeL(k, self.aCenters[i], qa, qb, qc, i==j)
-                A[i, j] = -2.0 * elementL
+                elementL  = ComputeL(k, p, qa, qb, qc, i==j)
+                M[i, j + n] =  2 * elementL
 
-        return A
+        # Fill in the bottom half of the "big matrix".
+        M[0:n, 0:n]       = np.eye(n, dtype=np.float32)
+        M[n: 2*n, 0:n]    = np.diag(alpha)
+        M[n: 2*n, n: 2*n] = np.diag(beta)
+        
+        return M
 
     def solveSamples(self, solution, aSamples):
         aResult = np.empty(aSamples.shape[0], dtype=complex)

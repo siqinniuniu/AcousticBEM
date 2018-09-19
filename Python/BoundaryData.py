@@ -18,28 +18,33 @@
 import numpy as np
 from AcousticProperties import *
 
+
 class BoundaryCondition(object):
     def __init__(self, size):
         self.alpha = np.empty(size, dtype = np.complex64)
         self.beta  = np.empty(size, dtype = np.complex64)
         self.f     = np.empty(size, dtype = np.complex64)
 
+        
 class BoundaryIncidence(object):
     def __init__(self, size):
         self.phi = np.empty(size, dtype = np.complex64)
         self.v   = np.empty(size, dtype = np.complex64)
 
+        
 class BoundarySolution(object):
 
-    def __init__(self, parent, k, aPhi, aV):
+    def __init__(self, parent, boundaryCondition, k, aPhi, aV):
         self.parent = parent
+        self.boundaryCondidtion = boundaryCondition
         self.k      = k
         self.aPhi   = aPhi
         self.aV     = aV
 
     def __repr__(self):
-        result = "Solution2D("
+        result  = "BoundarySolution("
         result += "parent = " + repr(self.parent) + ", "
+        result += "boundaryCondition = " + repr(self.boundaryCondition) + ", "
         result += "k = " + repr(self.k) + ", "
         result += "aPhi = " + repr(self.aPhi) + ", "
         result += "aV = " + repr(self.aV) + ")"
@@ -49,7 +54,7 @@ class BoundarySolution(object):
         res =  "Density of medium:      {} kg/m^3\n".format(self.parent.density)
         res += "Speed of sound:         {} m/s\n".format(self.parent.c)
         res += "Wavenumber (Frequency): {} ({} Hz)\n\n".format(self.k, wavenumberToFrequency(self.k))
-        res += "index          Potential                   Pressure                    Velocity              Intensity\n"
+        res += "index          Potential                   Pressure                    Velocity              Intensity\n\n"
         for i in range(self.aPhi.size):
             pressure = soundPressure(self.k, self.aPhi[i], c=self.parent.c, density=self.parent.density)
             intensity = AcousticIntensity(pressure, self.aV[i])
@@ -58,6 +63,12 @@ class BoundarySolution(object):
                     self.aV[i].real, self.aV[i].imag, intensity)
         return res
 
+    def solveInterior(self, aIncidentInteriorPhi, aInteriorPoints):
+        return self.parent.solveInterior(self, aIncidentInteriorPhi, aInteriorPoints)
+    
+    def solveExterior(self, aIncidentExteriorPhi, aExteriorPoints):
+        return self.parent.solveExterior(self, aIncidentExteriorPhi, aExteriorPoints)
+
     def pressure(self):
         return soundPressure(self.k, self.aPhi, c=self.parent.c, density=self.parent.density)
 
@@ -65,10 +76,41 @@ class BoundarySolution(object):
         return SoundMagnitude(self.pressure())
     
     def radiationRatio(self):
-        power = 0.0
+        power  = 0.0
         bpower = 0.0
         for i in range(self.aPhi.size):
             pressure = soundPressure(self.k, self.aPhi[i], c=self.parent.c, density=self.parent.density)
-            power += AcousticIntensity(pressure, self.aV[i])
-            bpower += (self.parent.density * self.parent.c * np.abs(self.aV[i])**2)
+            power   += AcousticIntensity(pressure, self.aV[i])
+            bpower  += (self.parent.density * self.parent.c * np.abs(self.aV[i])**2)
         return 2 * power / bpower
+
+    def mechanicalImpedance(self):
+        Zm = 0.0
+        for p, a, v in zip(self.pressure(), self.parent.elementArea(), self.aV):
+            Zm += p * a / v
+        return Zm
+
+    
+class SampleSolution(object):
+    def __init__(self, boundarySolution, aPhi):
+        self.boundarySolution = boundarySolution
+        self.aPhi    = aPhi
+
+    def __repr__(self):
+        result = "SampleSolution("
+        result += "boundarySolution = " + repr(self.parent) + ", "
+        result += "aPhi = " + repr(self.aPhi) + ")"
+        return result
+
+    def __str__(self):
+        result = "index          Potential                    Pressure               Magnitude         Phase\n\n"
+        for i in range(self.aPhi.size):
+            pressure = soundPressure(self.boundarySolution.k, self.aPhi[i],
+                                     c=self.boundarySolution.parent.c,
+                                     density=self.boundarySolution.parent.density)
+            magnitude = SoundMagnitude(pressure)
+            phase = SignalPhase(pressure)
+            result += "{:5d}  {: 1.4e}+ {: 1.4e}i   {: 1.4e}+ {: 1.4e}i    {: 1.4e} dB       {:1.4f}\n".format( \
+                i+1, self.aPhi[i].real, self.aPhi[i].imag, pressure.real, pressure.imag, magnitude, phase)
+            
+        return result
