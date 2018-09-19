@@ -50,7 +50,7 @@ class HelmholtzSolver(object):
         boundaryCondition = BoundaryCondition(self.numberOfElements())
         boundaryCondition.alpha.fill(0.0)
         boundaryCondition.beta.fill(1.0)
-        boundaryCondition.f.fill(1.0)
+        boundaryCondition.f.fill(0.0)
         return boundaryCondition
 
     def solveExteriorBoundary(self, k, boundaryCondition, boundaryIncidence, mu = None):
