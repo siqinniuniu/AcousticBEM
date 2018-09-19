@@ -29,8 +29,8 @@ import numpy as np
 
 
 class HelmholtzSolver2D(HelmholtzSolver):
-    def __init__(self, *args, **kwargs):
-        super(HelmholtzSolver2D, self).__init__(*args, **kwargs)
+    def __init__(self, aVertex, aElement, c = 344.0, density = 1.205):
+        super(HelmholtzSolver2D, self).__init__(aVertex, aElement, c, density)
         self.aCenters = 0.5 * (self.aVertex[self.aElement[:, 0]] + self.aVertex[self.aElement[:, 1]])
         # lenght of the boundary elements (for the 3d shapes this is replaced by aArea
         self.aLength = np.linalg.norm(self.aVertex[self.aElement[:, 0]] - self.aVertex[self.aElement[:, 1]])
@@ -101,7 +101,7 @@ class HelmholtzSolver2D(HelmholtzSolver):
         return aResult
 
     def solveInterior(self, solution, aIncidentInteriorPhi, aInteriorPoints):
-        return self.solveSamples(solution, aIncidentInteriorPhi, aInteriorPoints, 'interior')
+        return SampleSolution(solution, self.solveSamples(solution, aIncidentInteriorPhi, aInteriorPoints, 'interior'))
     
     def solveExterior(self, solution, aIncidentExteriorPhi, aExteriorPoints):
-        return self.solveSamples(solution, aIncidentExteriorPhi, aExteriorPoints, 'exterior')
+        return SampleSolution(solution, self.solveSamples(solution, aIncidentExteriorPhi, aExteriorPoints, 'exterior'))
