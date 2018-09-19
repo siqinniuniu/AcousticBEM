@@ -34,6 +34,25 @@ class HelmholtzSolver(object):
         result += "  rho = " + repr(self.rho) + ")"
         return result
 
+    def numberOfElements(self):
+        return self.aElement.shape[0]
+
+    def dirichletBoundaryCondition(self):
+        """Returns a boundary contidition with alpha the 1-function and f and beta 0-functions."""
+        boundaryCondition = BoundaryCondition(self.numberOfElements())
+        boundaryCondition.alpha.fill(1.0)
+        boundaryCondition.beta.fill(0.0)
+        boundaryCondition.f.fill(1.0)
+        return boundaryCondition
+
+    def neumannBoundaryCondition(self):
+        """Returns a boundary contidition with f and alpha 0-functions and beta the 1-function."""
+        boundaryCondition = BoundaryCondition(self.numberOfElements())
+        boundaryCondition.alpha.fill(0.0)
+        boundaryCondition.beta.fill(1.0)
+        boundaryCondition.f.fill(1.0)
+        return boundaryCondition
+
     def solveExteriorBoundary(self, k, boundaryCondition, boundaryIncidence, mu = None):
         mu = mu or (1j / (k + 1))
         assert boundaryCondition.f.size == self.aElement.shape[0]
