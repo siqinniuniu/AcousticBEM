@@ -48,19 +48,6 @@ class RayleighCavitySolverRAD(RayleighCavitySolver):
     def cavityNormals(self):
         return self.aNormals[self.nOpenElements:self.numberOfElements(), :]
 
-    def solveBoundary(self, k, boundaryCondition):
-        M = self.computeBoundaryMatrix(k,
-                                       boundaryCondition.alpha,
-                                       boundaryCondition.beta)
-        numberOfElements = self.totalNumberOfElements()
-        b = np.zeros(2*numberOfElements, dtype=np.complex64)
-        b[numberOfElements + self.nOpenElements: 2*numberOfElements] = boundaryCondition.f
-        x = np.linalg.solve(M, b)
-        
-        return RayleighCavityBoundarySolution(self, boundaryCondition, k,
-                                              x[0:numberOfElements],
-                                              x[numberOfElements:2*numberOfElements])
-
     def computeBoundaryMatrix(self, k, alpha, beta):
         m = self.nOpenElements
         n = self.totalNumberOfElements() - m
