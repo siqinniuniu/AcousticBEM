@@ -33,7 +33,7 @@ def plotPolarMap(title, frequencies, angles, magnitudes, stepSize = 6):
     
 def plotComplexImpedance(title, frequencies, impedance):
     fig, ax = plt.subplots(figsize = (15, 10))
-    ax.set_title('15 Inch Woofer in Infinite Baffle - Mechanical Impedance')
+    ax.set_title(title)
     ax.set_xlabel('Frequency [Hz]')
     ax.set_xscale('log') 
     ax.set_ylabel('Mechanical Impedance')

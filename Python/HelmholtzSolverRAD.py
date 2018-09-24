@@ -99,10 +99,12 @@ class HelmholtzSolverRAD(HelmholtzSolver):
                     assert False, 'Invalid orientation: {}'.format(orientation)
             aResult[i] = sum
         return aResult
-        
-    def solveInterior(self, solution, aIncidentInteriorPhi, aInteriorPoints):
-        return SampleSolution(solution, self.solveSamples(solution, aIncidentInteriorPhi, aInteriorPoints, 'interior'))
 
+class InteriorHelmholtzSolverRAD(HelmholtzSolverRAD):
+    def solveBoundary(self, k, boundaryCondition, boundaryIncidence, mu = None):
+        return super(InteriorHelmholtzSolverRAD, self).solveBoundary('interior', k, boundaryCondition, boundaryIncidence, mu)
 
-    def solveExterior(self, solution, aIncidentExteriorPhi, aExteriorPoints):
-        return SampleSolution(solution, self.solveSamples(solution, aIncidentExteriorPhi, aExteriorPoints, 'exterior'))
+class ExteriorHelmholtzSolverRAD(HelmholtzSolverRAD):
+    def solveBoundary(self, k, boundaryCondition, boundaryIncidence, mu = None):
+        return super(ExteriorHelmholtzSolverRAD, self).solveBoundary('exterior', k, boundaryCondition, boundaryIncidence, mu)
+

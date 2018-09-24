@@ -16,76 +16,33 @@
 # along with AcousticBEM.  If not, see <http://www.gnu.org/licenses/>.
 # ---------------------------------------------------------------------------
 import numpy as np
+from Solver import *
 from BoundaryData import *
 from Geometry import *
 
-class HelmholtzSolver(object):
-    def __init__(self, aVertex, aElement, c = 344.0, density = 1.205):
-        self.aVertex  = aVertex
-        self.aElement = aElement
-        self.c        = c
-        self.density  = density
+class HelmholtzSolver(Solver):
 
-    def __repr__(self):
-        result = "HelmholtzSolover("
-        result += "  aVertex = " + repr(self.aVertex) + ", "
-        result += "  aElement = " + repr(self.aElement) + ", "
-        result += "  c = " + repr(self.c) + ", "
-        result += "  rho = " + repr(self.rho) + ")"
-        return result
-
-    def numberOfElements(self):
-        return self.aElement.shape[0]
-
-    def dirichletBoundaryCondition(self):
-        """Returns a boundary contidition with alpha the 1-function and f and beta 0-functions."""
-        boundaryCondition = BoundaryCondition(self.numberOfElements())
-        boundaryCondition.alpha.fill(1.0)
-        boundaryCondition.beta.fill(0.0)
-        boundaryCondition.f.fill(1.0)
-        return boundaryCondition
-
-    def neumannBoundaryCondition(self):
-        """Returns a boundary contidition with f and alpha 0-functions and beta the 1-function."""
-        boundaryCondition = BoundaryCondition(self.numberOfElements())
-        boundaryCondition.alpha.fill(0.0)
-        boundaryCondition.beta.fill(1.0)
-        boundaryCondition.f.fill(0.0)
-        return boundaryCondition
-
-    def solveExteriorBoundary(self, k, boundaryCondition, boundaryIncidence, mu = None):
+    def solveBoundary(self, orientation, k, boundaryCondition, boundaryIncidence, mu = None):
         mu = mu or (1j / (k + 1))
         assert boundaryCondition.f.size == self.aElement.shape[0]
-        A, B = self.computeBoundaryMatricesExterior(k, mu)
+        A, B = self.computeBoundaryMatrices(k, mu, orientation)
         c = np.empty(self.aElement.shape[0], dtype=complex)
         for i in range(self.aElement.shape[0]):
-            # Note, the only difference between the interior solver and this
-            # one is the sign of the assignment below.
-            c[i] = -(boundaryIncidence.phi[i] + mu * boundaryIncidence.v[i])
-
-        phi, v = self.SolveLinearEquation(B, A, c,
-                                          boundaryCondition.alpha,
-                                          boundaryCondition.beta,
-                                          boundaryCondition.f)
-        return BoundarySolution(self, boundaryCondition, k, phi, v)
-
-    def solveInteriorBoundary(self, k, boundaryCondition, boundaryIncidence, mu = None):
-        mu = mu or (1j / (k + 1))
-        assert boundaryCondition.f.size == self.aElement.shape[0]
-        A, B = self.computeBoundaryMatricesInterior(k, mu)
-        c = np.empty(self.aElement.shape[0], dtype=complex)
-        for i in range(self.aElement.shape[0]):
-            # Note, the only difference between the interior solver and this
-            # one is the sign of the assignment below.
             c[i] = boundaryIncidence.phi[i] + mu * boundaryIncidence.v[i]
+        if 'exterior' == orientation:
+            c = -1.0 * c
+        else:
+            assert 'interior' == orientation, "orientation must be either 'interior' or 'exterior'"
 
         phi, v = self.SolveLinearEquation(B, A, c,
                                           boundaryCondition.alpha,
                                           boundaryCondition.beta,
                                           boundaryCondition.f)
-        return BoundarySolution(self, boundaryCondition, k, phi, v)
-
-    
+        if 'exterior' == orientation:
+            return ExteriorBoundarySolution(self, boundaryCondition, k, phi, v)
+        else:
+            return InteriorBoundarySolution(self, boundaryCondition, k, phi, v)
+        
     @classmethod
     def SolveLinearEquation(cls, Ai, Bi, ci, alpha, beta, f):
         A = np.copy(Ai)
@@ -130,23 +87,3 @@ class HelmholtzSolver(object):
 
         return x, y
 
-
-def printSolution(solution, pPhi):
-    print("\nSound pressure at the sample points\n")
-    print("index          Potential                    Pressure               Magnitude         Phase\n")
-    for i in range(aSamplePoints.size):
-        pressure = soundPressure(solution.k, aPhi[i], c=solution.parent.c, density=solution.parent.density)
-        magnitude = SoundMagnitude(pressure)
-        phase = SignalPhase(pressure)
-        print("{:5d}  {: 1.4e}+ {: 1.4e}i   {: 1.4e}+ {: 1.4e}i    {: 1.4e} dB       {:1.4f}".format( \
-            i+1, aPhi[i].real, aPhi[i].imag, pressure.real, pressure.imag, magnitude, phase))
-
-def printInteriorSolution(solution, pPhi):
-    print("\nSound pressure at the sample points\n")
-    print("index          Potential                    Pressure               Magnitude         Phase\n")
-    for i in range(pPhi.size):
-        pressure = soundPressure(solution.k, pPhi[i], c=solution.parent.c, density=solution.parent.density)
-        magnitude = SoundMagnitude(pressure)
-        phase = SignalPhase(pressure)
-        print("{:5d}  {: 1.4e}+ {: 1.4e}i   {: 1.4e}+ {: 1.4e}i    {: 1.4e} dB       {:1.4f}".format( \
-            i+1, pPhi[i].real, pPhi[i].imag, pressure.real, pressure.imag, magnitude, phase))
