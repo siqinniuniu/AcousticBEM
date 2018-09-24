@@ -16,6 +16,7 @@
 # along with AcousticBEM.  If not, see <http://www.gnu.org/licenses/>.
 # ---------------------------------------------------------------------------
 import numpy as np
+from Solver import *
 from BoundaryData import *
 from Geometry import *
 
@@ -26,24 +27,7 @@ else:
     from HelmholtzIntegrals3D import *        
 
 
-class RayleighSolver(object):
-    def __init__(self, aVertex, aElement, c = 344.0, density = 1.205):
-        self.aVertex = aVertex
-        self.aElement = aElement
-        self.c       = c
-        self.density = density
-        self.aArea   = None
-
-    def __repr__(self):
-        result = "RayleighSolover("
-        result += "  aVertex = " + repr(self.aVertex) + ", "
-        result += "  aElement = " + repr(self.aElement) + ", "
-        result += "  c = " + repr(self.c) + ", "
-        result += "  density = " + repr(self.density) + ")"
-        return result
-
-    def numberOfElements(self):
-        return self.aElement.shape[0]
+class RayleighSolver(Solver):
 
     def solveBoundary(self, k, boundaryCondition):
         assert boundaryCondition.f.size == self.numberOfElements()
@@ -53,10 +37,19 @@ class RayleighSolver(object):
         b[n: 2*n] = boundaryCondition.f
         x = np.linalg.solve(M, b)
         
-        return BoundarySolution(self, boundaryCondition, k, 
-                                x[0:self.numberOfElements()],
-                                x[self.numberOfElements():2*self.numberOfElements()])
+        return RayleighBoundarySolution(self, boundaryCondition, k, 
+                                        x[0:self.numberOfElements()],
+                                        x[self.numberOfElements():2*self.numberOfElements()])
 
+    
+class RayleighSolver3D(RayleighSolver):
+    def __init__(self,  aVertex, aElement, c = 344.0, density = 1.205):
+        super(RayleighSolver3D, self).__init__(aVertex, aElement, c, density)
+        self.aCenters = (self.aVertex[self.aElement[:, 0]] +\
+                         self.aVertex[self.aElement[:, 1]] +\
+                         self.aVertex[self.aElement[:, 2]]) / 3.0
+        self.aArea = None
+                                  
     def elementArea(self):
         if self.aArea is None:
             self.aArea = np.empty(self.aElement.shape[0], dtype=np.float32)
@@ -69,14 +62,6 @@ class RayleighSolver(object):
                 self.aArea[i] = 0.5 * norm(np.cross(ab, ac))
         return self.aArea
 
-    
-class RayleighSolver3D(RayleighSolver):
-    def __init__(self,  aVertex, aElement, c = 344.0, density = 1.205):
-        super(RayleighSolver3D, self).__init__(aVertex, aElement, c, density)
-        self.aCenters = (self.aVertex[self.aElement[:, 0]] +\
-                         self.aVertex[self.aElement[:, 1]] +\
-                         self.aVertex[self.aElement[:, 2]]) / 3.0
-                                  
     def computeBoundaryMatrix(self, k, alpha, beta):
         n = self.numberOfElements()
         M = np.zeros((2*n, 2*n), dtype=np.complex64)

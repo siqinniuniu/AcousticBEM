@@ -25,7 +25,6 @@ if bOptimized:
 else:
     from HelmholtzIntegrals3D import *        
 
-
     
 class HelmholtzSolver3D(HelmholtzSolver):
     def __init__(self, *args, **kwargs):
@@ -110,8 +109,13 @@ class HelmholtzSolver3D(HelmholtzSolver):
             aResult[i] = sum
         return aResult
 
-    def solveInterior(self, solution, aIncidentInteriorPhi, aInteriorPoints):
-        return self.solveSamples(solution, aIncidentInteriorPhi, aInteriorPoints, 'interior')
     
-    def solveExterior(self, solution, aIncidentExteriorPhi, aExteriorPoints):
-        return self.solveSamples(solution, aIncidentExteriorPhi, aExteriorPoints, 'exterior')
+class InteriorHelmholtzSolver3D(HelmholtzSolver3D):
+    def solveBoundary(self, k, boundaryCondition, boundaryIncidence, mu = None):
+        return super(InteriorHelmholtzSolver3D, self).solveBoundary('interior', k, boundaryCondition, boundaryIncidence, mu)
+
+class ExteriorHelmholtzSolver3D(HelmholtzSolver3D):
+    def solveBoundary(self, k, boundaryCondition, boundaryIncidence, mu = None):
+        return super(ExteriorHelmholtzSolver3D, self).solveBoundary('exterior', k, boundaryCondition, boundaryIncidence, mu)
+
+    

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with AcousticBEM.  If not, see <http://www.gnu.org/licenses/>.
 # ---------------------------------------------------------------------------
-import numpy as np
+from RayleighCavitySolver import *
 from BoundaryData import *
 from Geometry import *
 
@@ -26,13 +26,9 @@ else:
     from HelmholtzIntegralsRAD import *        
 
 
-class RayleighCavitySolverRAD(object):
+class RayleighCavitySolverRAD(RayleighCavitySolver):
     def __init__(self, aVertex, aElement, nOpenElements, c = 344.0, density = 1.205):
-        self.aVertex       = aVertex
-        self.aElement      = aElement
-        self.nOpenElements = nOpenElements
-        self.c             = c
-        self.density       = density
+        super(RayleighCavitySolverRAD, self).__init__(aVertex, aElement, nOpenElements, c, density)
         self.aCenters      = (self.aVertex[self.aElement[:, 0]] +\
                               self.aVertex[self.aElement[:, 1]]) / 2.0
         # area of the boundary alements
@@ -49,17 +45,6 @@ class RayleighCavitySolverRAD(object):
             self.aNormals[i] = vNormal / nNorm
             self.aLength[i] = nNorm
 
-    def __repr__(self):
-        result = "RayleighCavitySolver3D("
-        result += "  aVertex = " + repr(self.aVertex) + ", "
-        result += "  aElement = " + repr(self.aElement) + ", "
-        result += "  c = " + repr(self.c) + ", "
-        result += "  density = " + repr(self.density) + ")"
-        return result
-
-    def numberOfElements(self):
-        return self.aElement.shape[0]
-
     def cavityNormals(self):
         return self.aNormals[self.nOpenElements:self.numberOfElements(), :]
 
@@ -67,18 +52,18 @@ class RayleighCavitySolverRAD(object):
         M = self.computeBoundaryMatrix(k,
                                        boundaryCondition.alpha,
                                        boundaryCondition.beta)
-
-        b = np.zeros(2*self.numberOfElements(), dtype=np.complex64)
-        b[self.numberOfElements() + self.nOpenElements: 2*self.numberOfElements()] = boundaryCondition.f
+        numberOfElements = self.totalNumberOfElements()
+        b = np.zeros(2*numberOfElements, dtype=np.complex64)
+        b[numberOfElements + self.nOpenElements: 2*numberOfElements] = boundaryCondition.f
         x = np.linalg.solve(M, b)
         
-        return BoundarySolution(self, boundaryCondition, k,
-                                x[0:self.numberOfElements()],
-                                x[self.numberOfElements():2*self.numberOfElements()])
+        return RayleighCavityBoundarySolution(self, boundaryCondition, k,
+                                              x[0:numberOfElements],
+                                              x[numberOfElements:2*numberOfElements])
 
     def computeBoundaryMatrix(self, k, alpha, beta):
         m = self.nOpenElements
-        n = self.numberOfElements() - m
+        n = self.totalNumberOfElements() - m
         M = np.zeros((2*(m+n), 2*(m+n)), dtype=np.complex64)
 
         # Compute the top half of the "big matrix".

@@ -75,7 +75,6 @@ class HelmholtzSolver2D(HelmholtzSolver):
     def computeBoundaryMatricesExterior(self, k, mu):
         return self.computeBoundaryMatrices(k, mu, 'exterior')
 
-    
     def solveSamples(self, solution, aIncidentPhi, aSamples, orientation):
         assert aIncidentPhi.shape == aSamples.shape[:-1], \
             "Incident phi vector and sample points vector must match"
@@ -100,8 +99,11 @@ class HelmholtzSolver2D(HelmholtzSolver):
             aResult[i] = sum
         return aResult
 
-    def solveInterior(self, solution, aIncidentInteriorPhi, aInteriorPoints):
-        return SampleSolution(solution, self.solveSamples(solution, aIncidentInteriorPhi, aInteriorPoints, 'interior'))
-    
-    def solveExterior(self, solution, aIncidentExteriorPhi, aExteriorPoints):
-        return SampleSolution(solution, self.solveSamples(solution, aIncidentExteriorPhi, aExteriorPoints, 'exterior'))
+class InteriorHelmholtzSolver2D(HelmholtzSolver2D):
+    def solveBoundary(self, k, boundaryCondition, boundaryIncidence, mu = None):
+        return super(InteriorHelmholtzSolver2D, self).solveBoundary('interior', k, boundaryCondition, boundaryIncidence, mu)
+
+class ExteriorHelmholtzSolver2D(HelmholtzSolver2D):
+    def solveBoundary(self, k, boundaryCondition, boundaryIncidence, mu = None):
+        return super(ExteriorHelmholtzSolver2D, self).solveBoundary('exterior', k, boundaryCondition, boundaryIncidence, mu)
+

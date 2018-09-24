@@ -25,6 +25,13 @@ class BoundaryCondition(object):
         self.beta  = np.empty(size, dtype = np.complex64)
         self.f     = np.empty(size, dtype = np.complex64)
 
+    def __repr__(self):
+        result = self.__class__.__name__ + "("
+        result += "alpha = {}, ".format(self.alpha)
+        result += "beta = {}, ".format(self.beta)
+        result += "f = {})".format(self.f)
+        return result
+
         
 class BoundaryIncidence(object):
     def __init__(self, size):
@@ -33,7 +40,6 @@ class BoundaryIncidence(object):
 
         
 class BoundarySolution(object):
-
     def __init__(self, parent, boundaryCondition, k, aPhi, aV):
         self.parent = parent
         self.boundaryCondidtion = boundaryCondition
@@ -42,7 +48,7 @@ class BoundarySolution(object):
         self.aV     = aV
 
     def __repr__(self):
-        result  = "BoundarySolution("
+        result  = self.__class__.__name__ +  "("
         result += "parent = " + repr(self.parent) + ", "
         result += "boundaryCondition = " + repr(self.boundaryCondition) + ", "
         result += "k = " + repr(self.k) + ", "
@@ -62,12 +68,6 @@ class BoundarySolution(object):
                     i+1, self.aPhi[i].real, self.aPhi[i].imag, pressure.real, pressure.imag,                      \
                     self.aV[i].real, self.aV[i].imag, intensity)
         return res
-
-    def solveInterior(self, aIncidentInteriorPhi, aInteriorPoints):
-        return self.parent.solveInterior(self, aIncidentInteriorPhi, aInteriorPoints)
-    
-    def solveExterior(self, aIncidentExteriorPhi, aExteriorPoints):
-        return self.parent.solveExterior(self, aIncidentExteriorPhi, aExteriorPoints)
 
     def pressure(self):
         return soundPressure(self.k, self.aPhi, c=self.parent.c, density=self.parent.density)
@@ -90,7 +90,27 @@ class BoundarySolution(object):
             Zm += p * a / v
         return Zm
 
+class InteriorBoundarySolution(BoundarySolution):
+    def solveSamples(self, aIncidentPhi, aPoints):
+        return SampleSolution(self, self.parent.solveSamples(self, aIncidentPhi, aPoints, 'interior'))
     
+class ExteriorBoundarySolution(BoundarySolution):
+    def solveSamples(self, aIncidentPhi, aPoints):
+        return SampleSolution(self, self.parent.solveSamples(self, aIncidentPhi, aPoints, 'exterior'))
+
+class RayleighBoundarySolution(BoundarySolution):
+    def solveSamples(self, aSamplePoints):
+        return self.parent.solveSamples(self, aSamplePoints)
+
+class RayleighCavityBoundarySolution(BoundarySolution):
+    def solveCavity(self, aCavitySamples):
+        """Solve for point internal to the cavity."""
+        return self.parent.solveInterior(self, aCavitySamples)
+
+    def solveSamples(self, aSamplePoints):
+        """Solve for points in half space (exterior)."""
+        return self.parent.solveExterior(self, aSamplePoints)
+            
 class SampleSolution(object):
     def __init__(self, boundarySolution, aPhi):
         self.boundarySolution = boundarySolution
