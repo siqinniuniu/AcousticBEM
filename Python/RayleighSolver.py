@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------
-# Copyright (C) 2017 Frank Jargstorff
+# Copyright (C) 2018 Frank Jargstorff
 #
 # This file is part of the AcousticBEM library.
 # AcousticBEM is free software: you can redistribute it and/or modify
@@ -43,23 +43,14 @@ class RayleighSolver(Solver):
 
     
 class RayleighSolver3D(RayleighSolver):
-    def __init__(self,  aVertex, aElement, c = 344.0, density = 1.205):
-        super(RayleighSolver3D, self).__init__(aVertex, aElement, c, density)
-        self.aCenters = (self.aVertex[self.aElement[:, 0]] +\
-                         self.aVertex[self.aElement[:, 1]] +\
-                         self.aVertex[self.aElement[:, 2]]) / 3.0
+    def __init__(self,  oMesh, c = 344.0, density = 1.205):
+        super(RayleighSolver3D, self).__init__(oMesh, c, density)
+        self.aCenters = self.oGeometry.centers()
         self.aArea = None
                                   
     def elementArea(self):
         if self.aArea is None:
-            self.aArea = np.empty(self.aElement.shape[0], dtype=np.float32)
-            for i in range(self.aArea.size):
-                a = self.aVertex[self.aElement[i, 0], :]
-                b = self.aVertex[self.aElement[i, 1], :]
-                c = self.aVertex[self.aElement[i, 2], :]
-                ab = b - a
-                ac = c - a
-                self.aArea[i] = 0.5 * norm(np.cross(ab, ac))
+            self.aArea = self.oGeometry.areas()
         return self.aArea
 
     def computeBoundaryMatrix(self, k, alpha, beta):
@@ -70,10 +61,7 @@ class RayleighSolver3D(RayleighSolver):
         for i in range(n):
             p = self.aCenters[i]
             for j in range(n):
-                qa = self.aVertex[self.aElement[j, 0]]
-                qb = self.aVertex[self.aElement[j, 1]]
-                qc = self.aVertex[self.aElement[j, 2]]
-
+                qa, qb, qc = self.oGeometry.triangleVertices(j)
                 elementL  = ComputeL(k, p, qa, qb, qc, i==j)
                 M[i, j + n] =  2 * elementL
 
@@ -91,10 +79,7 @@ class RayleighSolver3D(RayleighSolver):
             p  = aSamples[i]
             sum = 0.0 + 0.0j
             for j in range(solution.aPhi.size):
-                qa = self.aVertex[self.aElement[j, 0]]
-                qb = self.aVertex[self.aElement[j, 1]]
-                qc = self.aVertex[self.aElement[j, 2]]
-
+                qa, qb, qc = self.oGeometry.triangleVertices(j)
                 elementL  = ComputeL(solution.k, p, qa, qb, qc, False)
                 sum -= 2.0 * elementL * solution.aV[j]
             aResult[i] = sum

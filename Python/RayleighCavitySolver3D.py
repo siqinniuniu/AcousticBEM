@@ -25,14 +25,11 @@ if bOptimized:
 else:
     from HelmholtzIntegrals3D import *        
 
-
 class RayleighCavitySolver3D(RayleighCavitySolver):
-    def __init__(self, aVertex, aElement, nOpenElements, c = 344.0, density = 1.205):
-        super(RayleighCavitySolver3D, self).__init__(aVertex, aElement, nOpenElements, c, density)
-        self.aCenters      = (self.aVertex[self.aElement[:, 0]] +\
-                              self.aVertex[self.aElement[:, 1]] +\
-                              self.aVertex[self.aElement[:, 2]]) / 3.0
-
+    def __init__(self, oMesh, c = 344.0, density = 1.205):
+        super(RayleighCavitySolver3D, self).__init__(oMesh, c, density)
+        self.aCenters = self.oGeometry.centers()
+        
     def computeBoundaryMatrix(self, k, alpha, beta):
         m = self.nOpenElements
         n = self.totalNumberOfElements() - m
@@ -42,9 +39,7 @@ class RayleighCavitySolver3D(RayleighCavitySolver):
         for i in range(m+n):
             p = self.aCenters[i]
             for j in range(m+n):
-                qa = self.aVertex[self.aElement[j, 0]]
-                qb = self.aVertex[self.aElement[j, 1]]
-                qc = self.aVertex[self.aElement[j, 2]]
+                qa, qb, qc = self.oGeometry.triangleVertices(j)
 
                 elementM  = ComputeM(k, p, qa, qb, qc, i==j)
                 elementL  = ComputeL(k, p, qa, qb, qc, i==j)
@@ -68,10 +63,7 @@ class RayleighCavitySolver3D(RayleighCavitySolver):
             p = aSamples[i,:]
             sum = 0.0
             for j in range(solution.aPhi.size):
-                qa = self.aVertex[self.aElement[j, 0]]
-                qb = self.aVertex[self.aElement[j, 1]]
-                qc = self.aVertex[self.aElement[j, 2]]
-
+                qa, qb, qc = self.oGeometry.triangleVertices(j)
                 elementL  = ComputeL(solution.k, p, qa, qb, qc, False)
                 elementM  = ComputeM(solution.k, p, qa, qb, qc, False)
                 sum += elementL * solution.aV[j] - elementM * solution.aPhi[j]
@@ -86,10 +78,7 @@ class RayleighCavitySolver3D(RayleighCavitySolver):
             p = aSamples[i,:]
             sum = 0.0
             for j in range(self.nOpenElements):
-                qa = self.aVertex[self.aElement[j, 0]]
-                qb = self.aVertex[self.aElement[j, 1]]
-                qc = self.aVertex[self.aElement[j, 2]]
-
+                qa, qb, qc = self.oGeometry.triangleVertices(j)
                 elementL  = ComputeL(solution.k, p, qa, qb, qc, False)
                 sum += -2.0 * elementL * solution.aV[j]
             aPhi[i] = sum

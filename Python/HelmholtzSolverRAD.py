@@ -26,29 +26,24 @@ else:
 
 
 class HelmholtzSolverRAD(HelmholtzSolver):
-    def __init__(self, *args, **kwargs):
-        super(HelmholtzSolverRAD, self).__init__(*args, **kwargs)
-        self.aCenters = 0.5 * (self.aVertex[self.aElement[:, 0]] + self.aVertex[self.aElement[:, 1]])
+    def __init__(self, oChain, c = 344.0, density = 1.205):
+        super(HelmholtzSolverRAD, self).__init__(oChain, c, density)
+        self.aCenters = self.oGeometry.centers()
         # area of the boundary alements
-        self.aArea = np.empty(self.aElement.shape[0], dtype=np.float32)
-        for i in range(self.aArea.size):
-            a = self.aVertex[self.aElement[i, 0]]
-            b = self.aVertex[self.aElement[i, 1]]
-            self.aArea[i] = np.pi * (a[0] + b[0]) * np.sqrt((a[0] - b[0])**2 + (a[1] - b[1])**2)
+        self.aArea = self.oGeometry.areas()
 
     def computeBoundaryMatrices(self, k, mu, orientation):
-        A = np.empty((self.aElement.shape[0], self.aElement.shape[0]), dtype=complex)
+        A = np.empty((self.numberOfElements(), self.numberOfElements()), dtype=complex)
         B = np.empty(A.shape, dtype=complex)
 
-        for i in range(self.aElement.shape[0]):
-            pa = self.aVertex[self.aElement[i, 0]]
-            pb = self.aVertex[self.aElement[i, 1]]
-            pab = pb - pa
-            center = 0.5 * (pa + pb)
-            centerNormal = Normal2D(pa, pb)
-            for j in range(self.aElement.shape[0]):
-                qa = self.aVertex[self.aElement[j, 0]]
-                qb = self.aVertex[self.aElement[j, 1]]
+        aCenter = self.oGeometry.centers()
+        aNormal = self.oGeometry.normals()
+        
+        for i in range(self.numberOfElements()):
+            center = aCenter[i]
+            centerNormal = -aNormal[i]
+            for j in range(self.numberOfElements()):
+                qa, qb = self.oGeometry.edgeVertices(j)
 
                 elementL  = ComputeL(k, center, qa, qb, i==j)
                 elementM  = ComputeM(k, center, qa, qb, i==j)
@@ -85,8 +80,7 @@ class HelmholtzSolverRAD(HelmholtzSolver):
             p  = aSamples[i]
             sum = aIncidentPhi[i]
             for j in range(solution.aPhi.size):
-                qa = self.aVertex[self.aElement[j, 0]]
-                qb = self.aVertex[self.aElement[j, 1]]
+                qa, qb = self.oGeometry.edgeVertices(j)
 
                 elementL  = ComputeL(solution.k, p, qa, qb, False)
                 elementM  = ComputeM(solution.k, p, qa, qb, False)

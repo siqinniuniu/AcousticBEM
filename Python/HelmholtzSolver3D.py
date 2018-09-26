@@ -17,7 +17,6 @@
 # ---------------------------------------------------------------------------
 from HelmholtzSolver import *
 from Geometry import *
-from numpy.linalg import norm
 
 bOptimized = True
 if bOptimized:
@@ -27,36 +26,21 @@ else:
 
     
 class HelmholtzSolver3D(HelmholtzSolver):
-    def __init__(self, *args, **kwargs):
-        super(HelmholtzSolver3D, self).__init__(*args, **kwargs)
-        self.aCenters = (self.aVertex[self.aElement[:, 0]] +\
-                         self.aVertex[self.aElement[:, 1]] +\
-                         self.aVertex[self.aElement[:, 2]]) / 3.0
-        # area of the boundary alements
-        self.aArea = np.empty(self.aElement.shape[0], dtype=np.float32)
-        self.aNormals = np.empty((self.aElement.shape[0], 3), dtype=np.float32)
-        for i in range(self.aArea.size):
-            a = self.aVertex[self.aElement[i, 0], :]
-            b = self.aVertex[self.aElement[i, 1], :]
-            c = self.aVertex[self.aElement[i, 2], :]
-            ab = b - a
-            ac = c - a
-            vNormal = np.cross(ab, ac)
-            nNorm = norm(vNormal)
-            self.aNormals[i] = vNormal / nNorm
-            self.aArea[i] = 0.5 * nNorm
-                                  
+    def __init__(self, oGeometry, c = 344.0, density = 1.205):
+        super(HelmholtzSolver3D, self).__init__(oGeometry, c, density)
+        self.aCenters = self.oGeometry.centers()
+        self.aArea = self.oGeometry.areas()
+        self.aNormals = self.oGeometry.normals()
+        
     def computeBoundaryMatrices(self, k, mu, orientation):
-        A = np.empty((self.aElement.shape[0], self.aElement.shape[0]), dtype=complex)
+        A = np.empty((self.numberOfElements(), self.numberOfElements()), dtype=complex)
         B = np.empty(A.shape, dtype=complex)
 
-        for i in range(self.aElement.shape[0]):
+        for i in range(self.numberOfElements()):
             p = self.aCenters[i]
             centerNormal = self.aNormals[i]
-            for j in range(self.aElement.shape[0]):
-                qa = self.aVertex[self.aElement[j, 0]]
-                qb = self.aVertex[self.aElement[j, 1]]
-                qc = self.aVertex[self.aElement[j, 2]]
+            for j in range(self.numberOfElements()):
+                qa, qb, qc = self.oGeometry.triangleVertices(j)
 
                 elementL  = ComputeL(k, p, qa, qb, qc, i==j)
                 elementM  = ComputeM(k, p, qa, qb, qc, i==j)
@@ -94,10 +78,7 @@ class HelmholtzSolver3D(HelmholtzSolver):
             p  = aSamples[i]
             sum = aIncidentPhi[i]
             for j in range(solution.aPhi.size):
-                qa = self.aVertex[self.aElement[j, 0]]
-                qb = self.aVertex[self.aElement[j, 1]]
-                qc = self.aVertex[self.aElement[j, 2]]
-
+                qa, qb, qc = self.oGeometry.triangleVertices(j)
                 elementL  = ComputeL(solution.k, p, qa, qb, qc, False)
                 elementM  = ComputeM(solution.k, p, qa, qb, qc, False)
                 if orientation == 'interior':

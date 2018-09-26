@@ -1,5 +1,6 @@
 import gmsh
 import numpy as np
+from Mesh import Mesh
 
 
 def getTriangleMesh(fileName = None):
@@ -21,7 +22,10 @@ def getTriangleMesh(fileName = None):
     for i, t in enumerate(nodeTags):
         aTempNodeTags[i] = nodeTagToIdx[t]
     aTriangle = aTempNodeTags.reshape(len(elementTags[0]), 3)
-    return aVertex, aTriangle
+    oMesh = Mesh(0, 0)
+    oMesh.aVertex = aVertex
+    oMesh.aTriangle = aTriangle
+    return oMesh
     
 def disk(r = 0.1, zOffset = 1.0, name = "Disk", maxElementSize = 0.01):
     gmsh.initialize()
@@ -44,10 +48,10 @@ def disk(r = 0.1, zOffset = 1.0, name = "Disk", maxElementSize = 0.01):
     gmsh.model.setPhysicalName(2, 1, name)
     gmsh.model.geo.synchronize()
 
-    aVertex, aTriangle = getTriangleMesh(name)
+    oMesh = getTriangleMesh(name)
     gmsh.finalize()
 
-    return aVertex, aTriangle
+    return oMesh
 
 def woofersSLA(maxElementSize = 0.01):
     r = 0.0635 # Effective membrane radius of Eminence Alpha 6a (computed from Sd as per spec sheet)
@@ -79,7 +83,7 @@ def woofersSLA(maxElementSize = 0.01):
     gmsh.model.setPhysicalName(2, 1, "Woofers")
     gmsh.model.geo.synchronize()
 
-    aVertex, aTriangle = getTriangleMesh("WoofersSLA")
+    oMesh = getTriangleMesh("WoofersSLA")
     gmsh.finalize()
 
-    return aVertex, aTriangle
+    return oMesh

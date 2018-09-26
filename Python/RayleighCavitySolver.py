@@ -19,19 +19,19 @@ import numpy as np
 from Solver import *
 
 class RayleighCavitySolver(Solver):
-    def __init__(self, aVertex, aElement, nOpenElements, c = 344.0, density = 1.205):
-        super(RayleighCavitySolver, self).__init__(aVertex, aElement, c, density)
-        self.nOpenElements = nOpenElements
+    def __init__(self, oGeometry, c = 344.0, density = 1.205):
+        super(RayleighCavitySolver, self).__init__(oGeometry, c, density)
+        self.nOpenElements = self.oGeometry.namedPartition['interface'][1]
 
     def numberOfInterfaceElements(self):
         return self.nOpenElements
     
     def numberOfElements(self):
         """The number of elements forming the cavity."""
-        return self.aElement.shape[0] - self.nOpenElements
+        return self.totalNumberOfElements() - self.nOpenElements
 
     def totalNumberOfElements(self):
-        return self.aElement.shape[0]
+        return super(RayleighCavitySolver, self).numberOfElements()
 
     def solveBoundary(self, k, boundaryCondition):
         M = self.computeBoundaryMatrix(k,
