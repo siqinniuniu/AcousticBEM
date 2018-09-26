@@ -27,26 +27,16 @@ else:
 
 
 class RayleighCavitySolverRAD(RayleighCavitySolver):
-    def __init__(self, aVertex, aElement, nOpenElements, c = 344.0, density = 1.205):
-        super(RayleighCavitySolverRAD, self).__init__(aVertex, aElement, nOpenElements, c, density)
-        self.aCenters      = (self.aVertex[self.aElement[:, 0]] +\
-                              self.aVertex[self.aElement[:, 1]]) / 2.0
-        # area of the boundary alements
-        self.aLength = np.empty(self.aElement.shape[0], dtype=np.float32)
-        self.aNormals = np.empty((self.aElement.shape[0], 2), dtype=np.float32)
-        for i in range(self.aLength.size):
-            a = self.aVertex[self.aElement[i, 0], :]
-            b = self.aVertex[self.aElement[i, 1], :]
-            ab = b - a
-            vNormal = np.empty_like(ab)
-            vNormal[0] = ab[1]
-            vNormal[1] = -ab[0]
-            nNorm = norm(vNormal)
-            self.aNormals[i] = vNormal / nNorm
-            self.aLength[i] = nNorm
+    def __init__(self, oChain, c = 344.0, density = 1.205):
+        super(RayleighCavitySolverRAD, self).__init__(oChain, c, density)
+        self.aCenters = self.oGeometry.centers()
+        self.aLength = self.oGeometry.lengths()
+        self.aNormals = self.oGeometry.normals()
 
     def cavityNormals(self):
-        return self.aNormals[self.nOpenElements:self.numberOfElements(), :]
+        cavityStart = self.oGeometry.namedPartition['cavity'][0]
+        cavityEnd   = self.oGeometry.namedPartition['cavity'][1]
+        return self.aNormals[cavityStart:cavityEnd, :]
 
     def computeBoundaryMatrix(self, k, alpha, beta):
         m = self.nOpenElements
@@ -57,8 +47,7 @@ class RayleighCavitySolverRAD(RayleighCavitySolver):
         for i in range(m+n):
             p = self.aCenters[i]
             for j in range(m+n):
-                qa = self.aVertex[self.aElement[j, 0]]
-                qb = self.aVertex[self.aElement[j, 1]]
+                qa, qb = self.oGeometry.edgeVertices(j)
 
                 elementM  = ComputeM(k, p, qa, qb, i==j)
                 elementL  = ComputeL(k, p, qa, qb, i==j)
@@ -82,9 +71,7 @@ class RayleighCavitySolverRAD(RayleighCavitySolver):
             p = aSamples[i,:]
             sum = 0.0
             for j in range(solution.aPhi.size):
-                qa = self.aVertex[self.aElement[j, 0]]
-                qb = self.aVertex[self.aElement[j, 1]]
-
+                qa, qb = self.oGeometry.edgeVertices(j)
                 elementL  = ComputeL(solution.k, p, qa, qb, False)
                 elementM  = ComputeM(solution.k, p, qa, qb, False)
                 sum += elementL * solution.aV[j] - elementM * solution.aPhi[j]
@@ -99,9 +86,7 @@ class RayleighCavitySolverRAD(RayleighCavitySolver):
             p = aSamples[i,:]
             sum = 0.0
             for j in range(self.nOpenElements):
-                qa = self.aVertex[self.aElement[j, 0]]
-                qb = self.aVertex[self.aElement[j, 1]]
-
+                qa, qb = self.oGeometry.edgeVertices(j)
                 elementL  = ComputeL(solution.k, p, qa, qb, False)
                 sum += -2.0 * elementL * solution.aV[j]
             aPhi[i] = sum

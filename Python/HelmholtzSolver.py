@@ -24,10 +24,10 @@ class HelmholtzSolver(Solver):
 
     def solveBoundary(self, orientation, k, boundaryCondition, boundaryIncidence, mu = None):
         mu = mu or (1j / (k + 1))
-        assert boundaryCondition.f.size == self.aElement.shape[0]
+        assert boundaryCondition.f.size == self.numberOfElements()
         A, B = self.computeBoundaryMatrices(k, mu, orientation)
-        c = np.empty(self.aElement.shape[0], dtype=complex)
-        for i in range(self.aElement.shape[0]):
+        c = np.empty(self.numberOfElements(), dtype=complex)
+        for i in range(self.numberOfElements()):
             c[i] = boundaryIncidence.phi[i] + mu * boundaryIncidence.v[i]
         if 'exterior' == orientation:
             c = -1.0 * c

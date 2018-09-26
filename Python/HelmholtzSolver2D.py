@@ -29,25 +29,24 @@ import numpy as np
 
 
 class HelmholtzSolver2D(HelmholtzSolver):
-    def __init__(self, aVertex, aElement, c = 344.0, density = 1.205):
-        super(HelmholtzSolver2D, self).__init__(aVertex, aElement, c, density)
-        self.aCenters = 0.5 * (self.aVertex[self.aElement[:, 0]] + self.aVertex[self.aElement[:, 1]])
+    def __init__(self, oChain, c = 344.0, density = 1.205):
+        super(HelmholtzSolver2D, self).__init__(oChain, c, density)
+        self.aCenters = self.oGeometry.centers()
         # lenght of the boundary elements (for the 3d shapes this is replaced by aArea
-        self.aLength = np.linalg.norm(self.aVertex[self.aElement[:, 0]] - self.aVertex[self.aElement[:, 1]])
+        self.aLength = self.oGeometry.lengths()
 
     def computeBoundaryMatrices(self, k, mu, orientation):
-        A = np.empty((self.aElement.shape[0], self.aElement.shape[0]), dtype=complex)
+        A = np.empty((self.numberOfElements(), self.numberOfElements()), dtype=complex)
         B = np.empty(A.shape, dtype=complex)
 
-        for i in range(self.aElement.shape[0]):
-            pa = self.aVertex[self.aElement[i, 0]]
-            pb = self.aVertex[self.aElement[i, 1]]
-            pab = pb - pa
-            center = 0.5 * (pa + pb)
-            centerNormal = Normal2D(pa, pb)
-            for j in range(self.aElement.shape[0]):
-                qa = self.aVertex[self.aElement[j, 0]]
-                qb = self.aVertex[self.aElement[j, 1]]
+        aCenter = self.oGeometry.centers()
+        aNormal = -self.oGeometry.normals()
+        
+        for i in range(self.numberOfElements()):
+            center = aCenter[i]
+            centerNormal = aNormal[i]
+            for j in range(self.numberOfElements()):
+                qa, qb = self.oGeometry.edgeVertices(j)
 
                 elementL  = ComputeL(k, center, qa, qb, i==j)
                 elementM  = ComputeM(k, center, qa, qb, i==j)
@@ -85,8 +84,7 @@ class HelmholtzSolver2D(HelmholtzSolver):
             p  = aSamples[i]
             sum = aIncidentPhi[i]
             for j in range(solution.aPhi.size):
-                qa = self.aVertex[self.aElement[j, 0]]
-                qb = self.aVertex[self.aElement[j, 1]]
+                qa, qb = self.oGeometry.edgeVertices(j)
 
                 elementL  = ComputeL(solution.k, p, qa, qb, False)
                 elementM  = ComputeM(solution.k, p, qa, qb, False)
