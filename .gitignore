@@ -5,6 +5,8 @@ __pycache__
 *.log
 *.tar.gz
 *.a
+*.OUT
+*.so
 fgsl_build
 fgsl
 gsl_build
