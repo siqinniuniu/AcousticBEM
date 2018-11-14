@@ -31,13 +31,13 @@ def plotPolarMap(title, frequencies, angles, magnitudes, stepSize = 6):
     cbar = fig.colorbar(CS)
     cbar.ax.set_ylabel('Sound Magnitude [dB]')
     
-def plotComplexImpedance(title, frequencies, impedance):
+def plotMechanicalImpedance(title, frequencies, impedance):
     fig, ax = plt.subplots(figsize = (15, 10))
     ax.set_title(title)
     ax.set_xlabel('Frequency [Hz]')
     ax.set_xscale('log') 
     ax.set_ylabel('Mechanical Impedance')
-    ax.plot(aFrequency, np.real(aNumericalZm), label='Real')
-    ax.plot(aFrequency, np.imag(aNumericalZm), label='Imaginary')
+    ax.plot(frequencies, np.real(impedance), label='Real')
+    ax.plot(frequencies, np.imag(impedance), label='Imaginary')
     ax.legend()
 

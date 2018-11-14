@@ -24,7 +24,7 @@
 #include <assert.h>
 
 
-#define MAX_LINE_RULE_SAMPLES 2048
+#define MAX_LINE_RULE_SAMPLES 4096
 
 typedef struct {
   float re;

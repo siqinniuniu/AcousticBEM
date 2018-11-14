@@ -29,10 +29,10 @@ class Chain(object):
          self.aNormal = None
 
     def __repr__(self):
-        result = self.__class__.__name__ + "("
-        result += "aVertex = {}, ".format(self.aVertex)
-        result += "aEdge = {}, ".format(self.aEdge)
-        result += "namedPartition = {})".format(self.namedPartition)
+        result = self.__class__.__name__ + "(\n"
+        result += "aVertex({}) = {},\n ".format(self.aVertex.shape[0], self.aVertex)
+        result += "aEdge({}) = {}, \n".format(self.aEdge.shape[0], self.aEdge)
+        result += "namedPartition = {}\n)".format(self.namedPartition)
         return result
 
     def edgeVertices(self, iEdge):
@@ -73,14 +73,18 @@ class Chain(object):
             self.computeLengthsAndNormals()
         return self.aNormal
 
-    def areas(self):
+    def areas(self, namedPartition = None):
         """The areas of the surfaces created by rotating an edge around the x-axis."""
         if self.aArea is None:
             self.aArea = np.empty(self.aEdge.shape[0], dtype=np.float32)
             for i in range(self.aArea.size):
                 a, b = self.edgeVertices(i)
                 self.aArea[i] = np.pi * (a[0] + b[0]) * np.sqrt((a[0] - b[0])**2 + (a[1] - b[1])**2)
-        return self.aArea
+        if namedPartition is None:
+            return self.aArea
+        else:
+            partition = self.namedPartition[namedPartition]
+            return self.aArea[partition[0]: partition[1]]
 
     
 class Mesh(object):
