@@ -32,7 +32,11 @@ class RayleighCavitySolverRAD(RayleighCavitySolver):
         self.aCenters = self.oGeometry.centers()
         self.aLength = self.oGeometry.lengths()
         self.aNormals = self.oGeometry.normals()
+        self.aArea = None
 
+    def elementArea(self, namedPartition = None):
+        return self.oGeometry.areas(namedPartition)
+        
     def cavityNormals(self):
         cavityStart = self.oGeometry.namedPartition['cavity'][0]
         cavityEnd   = self.oGeometry.namedPartition['cavity'][1]

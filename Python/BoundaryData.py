@@ -69,11 +69,16 @@ class BoundarySolution(object):
                     self.aV[i].real, self.aV[i].imag, intensity)
         return res
 
-    def pressure(self):
-        return soundPressure(self.k, self.aPhi, c=self.parent.c, density=self.parent.density)
+    def pressure(self, namedPartition = None):
+        if namedPartition is None:
+            return soundPressure(self.k, self.aPhi, c=self.parent.c, density=self.parent.density)
+        else:
+            range = self.parent.oGeometry.namedPartition[namedPartition]
+            return soundPressure(self.k, self.aPhi[range[0]: range[1]],
+                                 c=self.parent.c, density=self.parent.density)
 
-    def pressureDecibell(self):
-        return SoundMagnitude(self.pressure())
+    def pressureDecibell(self, namedPartition = None):
+        return SoundMagnitude(self.pressure(namedPartition))
     
     def radiationRatio(self):
         power  = 0.0
@@ -84,9 +89,14 @@ class BoundarySolution(object):
             bpower  += (self.parent.density * self.parent.c * np.abs(self.aV[i])**2)
         return 2 * power / bpower
 
-    def mechanicalImpedance(self):
+    def mechanicalImpedance(self, namedPartition = None):
         Zm = 0.0
-        for p, a, v in zip(self.pressure(), self.parent.elementArea(), self.aV):
+        if namedPartition is None:
+            aV = self.aV
+        else:
+            partition = self.parent.oGeometry.namedPartition[namedPartition]
+            aV = self.aV[partition[0]:partition[1]]
+        for p, a, v in zip(self.pressure(namedPartition), self.parent.elementArea(namedPartition), aV):
             Zm += p * a / v
         return Zm
 
