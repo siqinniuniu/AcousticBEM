@@ -167,8 +167,34 @@ class ConicalSpeaker(object):
         plotPolarMap(self.name + " - Directivity Map",
                      aFrequency, aAngle, aMagnitudes, 3)
 
+    def makeImpedancePlot(self):
+        solver = RayleighCavitySolverRAD(self.chain())
+
+        nBoundaryElements = solver.numberOfElements()
+        boundaryCondition = solver.neumannBoundaryCondition()
+        vVelocity = np.array([1.0, 0.0], dtype=np.float32)
+        aNormals = solver.cavityNormals()
+        for i in range(nBoundaryElements):
+            boundaryCondition.f[i] = np.dot(vVelocity, aNormals[i, :])
+            
+        frequencySamples = 600
+        aFrequency = np.logspace(np.log10(20), np.log10(5000), frequencySamples)
+        aK = frequencyToWavenumber(aFrequency)
+        
+        aZm = Parallel(n_jobs=4)(delayed(ConicalSpeaker.mechanicalImpedance)
+                                 (k, solver, boundaryCondition) for k in aK)
+        aZm = -1.0 * np.asarray(aZm) # -1 because of normals point outside of cavity
+
+        plotMechanicalImpedance(self.name + " in Infinite Baffle - Mechanical Impedance", 
+                        aFrequency, aZm)
+        
     @staticmethod
-    def magnitude(k, oSolver, boundaryCondition, aSamples):
-        solution = oSolver.solveBoundary(k, boundaryCondition)
-        sampleSolution = oSolver.solveExterior(solution, aSamples)
+    def magnitude(k, solver, boundaryCondition, aSamples):
+        solution = solver.solveBoundary(k, boundaryCondition)
+        sampleSolution = solver.solveExterior(solution, aSamples)
         return SoundMagnitude(soundPressure(k, sampleSolution.aPhi))
+
+    @staticmethod
+    def mechanicalImpedance(k, solver, boundaryCondition):
+        solution = solver.solveBoundary(k, boundaryCondition)
+        return solution.mechanicalImpedance('cavity')
