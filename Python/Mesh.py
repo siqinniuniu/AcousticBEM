@@ -134,7 +134,8 @@ class Mesh(object):
             self.aNormal[i] = vNormal / nNorm
             self.aArea[i] = 0.5 * nNorm
 
-    def areas(self):
+    def areas(self, named_partition = None):
+        assert named_partition is None, "Named partitions not yet supported."
         if self.aArea is None:
             self.computeAreasAndNormals()
         return self.aArea
