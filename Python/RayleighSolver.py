@@ -48,10 +48,8 @@ class RayleighSolver3D(RayleighSolver):
         self.aCenters = self.oGeometry.centers()
         self.aArea = None
                                   
-    def elementArea(self):
-        if self.aArea is None:
-            self.aArea = self.oGeometry.areas()
-        return self.aArea
+    def elementArea(self, namedPartition = None):
+        return self.oGeometry.areas(namedPartition)
 
     def computeBoundaryMatrix(self, k, alpha, beta):
         n = self.numberOfElements()
