@@ -26,77 +26,83 @@ else:
 
     
 class HelmholtzSolver3D(HelmholtzSolver):
-    def __init__(self, oGeometry, c = 344.0, density = 1.205):
-        super(HelmholtzSolver3D, self).__init__(oGeometry, c, density)
-        self.aCenters = self.oGeometry.centers()
-        self.aArea = self.oGeometry.areas()
-        self.aNormals = self.oGeometry.normals()
-        
-    def computeBoundaryMatrices(self, k, mu, orientation):
-        A = np.empty((self.numberOfElements(), self.numberOfElements()), dtype=complex)
+    def __init__(self, geometry, c=344.0, density=1.205):
+        super(HelmholtzSolver3D, self).__init__(geometry, c, density)
+        self.centers = self.geometry.centers()
+        self.areas = self.geometry.areas()
+        self.normals = self.geometry.normals()
+
+    # noinspection PyPep8Naming
+    def compute_boundary_matrices(self, k, mu, orientation):
+        A = np.empty((self.len(), self.len()), dtype=complex)
         B = np.empty(A.shape, dtype=complex)
 
-        for i in range(self.numberOfElements()):
-            p = self.aCenters[i]
-            centerNormal = self.aNormals[i]
-            for j in range(self.numberOfElements()):
-                qa, qb, qc = self.oGeometry.triangleVertices(j)
+        for i in range(self.len()):
+            p = self.centers[i]
+            normal = self.normals[i]
+            for j in range(self.len()):
+                qa, qb, qc = self.geometry.triangle_vertices(j)
 
-                elementL  = ComputeL(k, p, qa, qb, qc, i==j)
-                elementM  = ComputeM(k, p, qa, qb, qc, i==j)
-                elementMt = ComputeMt(k, p, centerNormal, qa, qb, qc, i==j)
-                elementN  = ComputeN(k, p, centerNormal, qa, qb, qc, i==j)
+                element_l = compute_l(k, p, qa, qb, qc, i == j)
+                element_m = compute_m(k, p, qa, qb, qc, i == j)
+                element_mt = compute_mt(k, p, normal, qa, qb, qc, i == j)
+                element_n = compute_n(k, p, normal, qa, qb, qc, i == j)
 
-                A[i, j] = elementL + mu * elementMt
-                B[i, j] = elementM + mu * elementN
+                A[i, j] = element_l + mu * element_mt
+                B[i, j] = element_m + mu * element_n
 
             if orientation == 'interior':
                 # interior variant, signs are reversed for exterior
-                A[i,i] -= 0.5 * mu
-                B[i,i] += 0.5
+                A[i, i] -= 0.5 * mu
+                B[i, i] += 0.5
             elif orientation == 'exterior':
-                A[i,i] += 0.5 * mu
-                B[i,i] -= 0.5
+                A[i, i] += 0.5 * mu
+                B[i, i] -= 0.5
             else:
                 assert False, 'Invalid orientation: {}'.format(orientation)
 
         return A, B
 
-    def computeBoundaryMatricesInterior(self, k, mu):
-        return self.computeBoundaryMatrices(k, mu, 'interior')
+    def compute_boundary_matrices_interior(self, k, mu):
+        return self.compute_boundary_matrices(k, mu, 'interior')
     
-    def computeBoundaryMatricesExterior(self, k, mu):
-        return self.computeBoundaryMatrices(k, mu, 'exterior')
+    def compute_boundary_matrices_exterior(self, k, mu):
+        return self.compute_boundary_matrices(k, mu, 'exterior')
     
-    def solveSamples(self, solution, aIncidentPhi, aSamples, orientation):
-        assert aIncidentPhi.shape == aSamples.shape[:-1], \
+    def solve_samples(self, solution, incident_phis, samples, orientation):
+        assert incident_phis.shape == samples.shape[:-1], \
             "Incident phi vector and sample points vector must match"
 
-        aResult = np.empty(aSamples.shape[0], dtype=complex)
+        results = np.empty(samples.shape[0], dtype=complex)
 
-        for i in range(aIncidentPhi.size):
-            p  = aSamples[i]
-            sum = aIncidentPhi[i]
-            for j in range(solution.aPhi.size):
-                qa, qb, qc = self.oGeometry.triangleVertices(j)
-                elementL  = ComputeL(solution.k, p, qa, qb, qc, False)
-                elementM  = ComputeM(solution.k, p, qa, qb, qc, False)
+        for i in range(incident_phis.size):
+            p = samples[i]
+            sum = incident_phis[i]
+            for j in range(solution.phis.size):
+                qa, qb, qc = self.geometry.triangle_vertices(j)
+                element_l = compute_l(solution.k, p, qa, qb, qc, False)
+                element_m = compute_m(solution.k, p, qa, qb, qc, False)
                 if orientation == 'interior':
-                    sum += elementL * solution.aV[j] - elementM * solution.aPhi[j]
+                    sum += element_l * solution.velocities[j] - element_m * solution.phis[j]
                 elif orientation == 'exterior':
-                    sum -= elementL * solution.aV[j] - elementM * solution.aPhi[j]
+                    sum -= element_l * solution.velocities[j] - element_m * solution.phis[j]
                 else:
                     assert False, 'Invalid orientation: {}'.format(orientation)
-            aResult[i] = sum
-        return aResult
+            results[i] = sum
+        return results
 
     
 class InteriorHelmholtzSolver3D(HelmholtzSolver3D):
-    def solveBoundary(self, k, boundaryCondition, boundaryIncidence, mu = None):
-        return super(InteriorHelmholtzSolver3D, self).solveBoundary('interior', k, boundaryCondition, boundaryIncidence, mu)
+    def solve_boundary(self, k, boundary_condition, boundary_incidence, mu = None):
+        return super(InteriorHelmholtzSolver3D,
+                     self).solve_boundary('interior', k,
+                                          boundary_condition, boundary_incidence,
+                                          mu)
+
 
 class ExteriorHelmholtzSolver3D(HelmholtzSolver3D):
-    def solveBoundary(self, k, boundaryCondition, boundaryIncidence, mu = None):
-        return super(ExteriorHelmholtzSolver3D, self).solveBoundary('exterior', k, boundaryCondition, boundaryIncidence, mu)
-
-    
+    def solve_boundary(self, k, boundary_condition, boundary_incidence, mu = None):
+        return super(ExteriorHelmholtzSolver3D,
+                     self).solve_boundary('exterior', k,
+                                          boundary_condition, boundary_incidence,
+                                          mu)

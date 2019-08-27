@@ -17,8 +17,9 @@
 # ---------------------------------------------------------------------------
 import numpy as np
 from numpy.linalg import norm
-from HelmholtzIntegrals2D import ComplexQuad
-from Geometry import Normal2D
+from HelmholtzIntegrals2D import complex_quad
+from Geometry import normal_2d
+
 
 class CircularIntegratorPi(object):
     """
@@ -52,7 +53,8 @@ class CircularIntegratorPi(object):
             sum += self.samples[n % self.samples.shape[0], 1] * func(self.rotationFactors[n, :])
         return sum * np.pi / self.segments
 
-def ComplexQuadGenerator(func, start, end):
+
+def complex_quad_generator(func, start, end):
     """
     This is a variation on the basic complex quadrature function from the
     base class. The difference is, that the abscissa values y**2 have been
@@ -76,21 +78,23 @@ def ComplexQuadGenerator(func, start, end):
 
     return 2.0 * sum * norm(vec)
 
-def ComplexQuadCone(func, start, end, segments = 1):
+
+def complex_quad_cone(func, start, end, segments = 1):
     delta = 1.0 / segments * (end - start)
     sum = 0.0
     for s in range(segments):
-        sum += ComplexQuad(func, start + s * delta, start + (s+1) * delta)
+        sum += complex_quad(func, start + s * delta, start + (s + 1) * delta)
 
     return sum
 
-def ComputeL(k, p, qa, qb, pOnElement):
+
+def compute_l(k, p, qa, qb, p_on_element):
     qab = qb - qa
     # subdived circular integral into sections of
     # similar size as qab
     q = 0.5 * (qa + qb)
     nSections = 1 + int(q[0] * np.pi / norm(qab))
-    if pOnElement:
+    if p_on_element:
         ap = p - qa
 
         if k == 0.0:
@@ -107,7 +111,7 @@ def ComputeL(k, p, qa, qb, pOnElement):
 
                 return circle.integrate(circleFunc) * r / (2.0 * np.pi)
 
-            return ComplexQuadGenerator(generatorFunc, p, qa) + ComplexQuadGenerator(generatorFunc, p, qb)
+            return complex_quad_generator(generatorFunc, p, qa) + complex_quad_generator(generatorFunc, p, qb)
 
         else:
             def generatorFunc(x):
@@ -124,7 +128,7 @@ def ComputeL(k, p, qa, qb, pOnElement):
 
                 return circle.integrate(circleFunc) * r / (2.0 * np.pi)
 
-            return ComputeL(0.0, p, qa, qb, True) + ComplexQuad(generatorFunc, qa, qb)
+            return compute_l(0.0, p, qa, qb, True) + complex_quad(generatorFunc, qa, qb)
 
     else:
         if k == 0.0:
@@ -141,7 +145,7 @@ def ComputeL(k, p, qa, qb, pOnElement):
 
                 return circle.integrate(circleFunc) * r / (2.0 * np.pi)
 
-            return ComplexQuad(generatorFunc, qa, qb)
+            return complex_quad(generatorFunc, qa, qb)
 
         else:
             def generatorFunc(x):
@@ -158,14 +162,12 @@ def ComputeL(k, p, qa, qb, pOnElement):
 
                 return circle.integrate(circleFunc) * r / (2.0 * np.pi)
 
+            return complex_quad(generatorFunc, qa, qb)
 
-            return ComplexQuad(generatorFunc, qa, qb)
 
-        return 0.0
-
-def ComputeM(k, p, qa, qb, pOnElement):
+def compute_m(k, p, qa, qb, p_on_element):
     qab = qb - qa
-    vec_q = Normal2D(qa, qb)
+    vec_q = normal_2d(qa, qb)
 
     # subdived circular integral into sections of
     # similar size as qab
@@ -188,10 +190,10 @@ def ComputeM(k, p, qa, qb, pOnElement):
 
             return circle.integrate(circleFunc) * r / (2.0 * np.pi)
 
-        if pOnElement:
-            return ComplexQuad(generatorFunc, qa, p) + ComplexQuad(generatorFunc, p, qb)
+        if p_on_element:
+            return complex_quad(generatorFunc, qa, p) + complex_quad(generatorFunc, p, qb)
         else:
-            return ComplexQuad(generatorFunc, qa, qb)
+            return complex_quad(generatorFunc, qa, qb)
 
     else:
         def generatorFunc(x):
@@ -209,14 +211,13 @@ def ComputeM(k, p, qa, qb, pOnElement):
 
             return circle.integrate(circleFunc) * r / (2.0 * np.pi)
 
-        if pOnElement:
-            return ComplexQuad(generatorFunc, qa, p) + ComplexQuad(generatorFunc, p, qb)
+        if p_on_element:
+            return complex_quad(generatorFunc, qa, p) + complex_quad(generatorFunc, p, qb)
         else:
-            return ComplexQuad(generatorFunc, qa, qb)
+            return complex_quad(generatorFunc, qa, qb)
 
-    return 0.0
 
-def ComputeMt(k, p, vecp, qa, qb, pOnElement):
+def compute_mt(k, p, vecp, qa, qb, p_on_element):
     qab = qb - qa
 
     # subdived circular integral into sections of
@@ -239,10 +240,10 @@ def ComputeMt(k, p, vecp, qa, qb, pOnElement):
 
             return circle.integrate(circleFunc) * r / (2.0 * np.pi)
 
-        if pOnElement:
-            return ComplexQuad(generatorFunc, qa, p) + ComplexQuad(generatorFunc, p, qb)
+        if p_on_element:
+            return complex_quad(generatorFunc, qa, p) + complex_quad(generatorFunc, p, qb)
         else:
-            return ComplexQuad(generatorFunc, qa, qb)
+            return complex_quad(generatorFunc, qa, qb)
 
     else:
         def generatorFunc(x):
@@ -260,22 +261,22 @@ def ComputeMt(k, p, vecp, qa, qb, pOnElement):
 
             return circle.integrate(circleFunc) * r / (2.0 * np.pi)
 
-
-        if pOnElement:
-            return ComplexQuad(generatorFunc, qa, p) + ComplexQuad(generatorFunc, p, qb)
+        if p_on_element:
+            return complex_quad(generatorFunc, qa, p) + complex_quad(generatorFunc, p, qb)
         else:
-            return ComplexQuad(generatorFunc, qa, qb)
+            return complex_quad(generatorFunc, qa, qb)
 
-def ComputeN(k, p, vecp, qa, qb, pOnElement):
+
+def compute_n(k, p, vecp, qa, qb, p_on_element):
     qab = qb - qa
-    vec_q = Normal2D(qa, qb)
+    vec_q = normal_2d(qa, qb)
 
     # subdived circular integral into sections of
     # similar size as qab
     q = 0.5 * (qa + qb)
     nSections = 1 + int(q[0] * np.pi / norm(qab))
 
-    if pOnElement:
+    if p_on_element:
         if k == 0.0:
             vecp3 = np.array([vecp[0], 0.0, vecp[1]], dtype=np.float32)
             def coneFunc(x, direction):
@@ -304,7 +305,7 @@ def ComputeN(k, p, vecp, qa, qb, pOnElement):
                 direction = 1.0
             tip_a = np.array([0.0, qa[1] + direction * qa[0]], dtype=np.float32)
             nConeSectionsA = int(qa[0] * np.sqrt(2.0) / lenAB) + 1
-            coneValA = ComplexQuadCone(lambda x: coneFunc(x, direction), qa, tip_a, nConeSectionsA)
+            coneValA = complex_quad_cone(lambda x: coneFunc(x, direction), qa, tip_a, nConeSectionsA)
 
             # deal with the cone at the qb side of the generator
             direction = np.sign(qb[1] - qa[1])
@@ -312,7 +313,7 @@ def ComputeN(k, p, vecp, qa, qb, pOnElement):
                 direction = -1.0
             tip_b = np.array([0.0, qb[1] + direction * qb[0]], dtype=np.float32)
             nConeSectionsB = int(qb[0] * np.sqrt(2.0) / lenAB) + 1
-            coneValB = ComplexQuadCone(lambda x: coneFunc(x, direction), qb, tip_b, nConeSectionsB)
+            coneValB = complex_quad_cone(lambda x: coneFunc(x, direction), qb, tip_b, nConeSectionsB)
 
             return -(coneValA + coneValB)
 
@@ -344,8 +345,9 @@ def ComputeN(k, p, vecp, qa, qb, pOnElement):
 
                 return circle.integrate(circleFunc) * r / (2.0 * np.pi)
 
-            return ComputeN(0.0, p, vecp, qa, qb, True) - k**2 * ComputeL(0.0, p, qa, qb, True) / 2.0 \
-                + ComplexQuad(generatorFunc, qa, p) + ComplexQuad(generatorFunc, p, qb)
+            return compute_n(0.0, p, vecp, qa, qb, True) \
+                - k ** 2 * compute_l(0.0, p, qa, qb, True) / 2.0 \
+                + complex_quad(generatorFunc, qa, p) + complex_quad(generatorFunc, p, qb)
 
     else:
         if k == 0.0:
@@ -372,7 +374,7 @@ def ComputeN(k, p, vecp, qa, qb, pOnElement):
 
                 return circle.integrate(circleFunc) * r / (2.0 * np.pi)
 
-            return ComplexQuad(generatorFunc, qa, qb)
+            return complex_quad(generatorFunc, qa, qb)
         else:
             def generatorFunc(x):
                 circle = CircularIntegratorPi(nSections)
@@ -397,4 +399,4 @@ def ComputeN(k, p, vecp, qa, qb, pOnElement):
 
                 return circle.integrate(circleFunc) * r / (2.0 * np.pi)
 
-            return ComplexQuad(generatorFunc, qa, qb)
+            return complex_quad(generatorFunc, qa, qb)

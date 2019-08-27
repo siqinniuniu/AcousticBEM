@@ -3,104 +3,105 @@ import gmsh
 from joblib import Parallel, delayed
 
 from GmshBoundaries import *
-from SamplingPatterns import semiCircle
+from SamplingPatterns import semi_circle
 from RayleighCavitySolverRAD import *
 from Mesh import Chain
 
 from Plots import *
 
-class HalfSpaceHorn(object):
-    def __init__(self, name, maxElementSize = 0.01):
-        self.name = name
-        self.maxElementSize = maxElementSize
 
-    def plotConeSection(self):
-        self.chain() # make sure polygonal chain is available
-        aX = np.empty(self.oGeometry.aEdge.shape[0] + 1, dtype=np.float32)
-        aY = np.empty(self.oGeometry.aEdge.shape[0] + 1, dtype=np.float32)
-        aX[0] = self.oGeometry.aVertex[self.oGeometry.aEdge[0, 0], 1]
-        aY[0] = self.oGeometry.aVertex[self.oGeometry.aEdge[0, 0], 0]
+class HalfSpaceHorn(object):
+    def __init__(self, name, max_element_size=0.01):
+        self.name = name
+        self.max_element_size = max_element_size
+
+    def plot_cone_section(self):
+        self.chain()  # make sure polygonal chain is available
+        x_values = np.empty(self.oGeometry.aEdge.shape[0] + 1, dtype=np.float32)
+        y_values = np.empty(self.oGeometry.aEdge.shape[0] + 1, dtype=np.float32)
+        x_values[0] = self.oGeometry.aVertex[self.oGeometry.aEdge[0, 0], 1]
+        y_values[0] = self.oGeometry.aVertex[self.oGeometry.aEdge[0, 0], 0]
         for i in range(self.oGeometry.aEdge.shape[0]):
-            aX[i+1] = self.oGeometry.aVertex[self.oGeometry.aEdge[i, 1], 1]
-            aY[i+1] = self.oGeometry.aVertex[self.oGeometry.aEdge[i, 1], 0]
+            x_values[i+1] = self.oGeometry.aVertex[self.oGeometry.aEdge[i, 1], 1]
+            y_values[i+1] = self.oGeometry.aVertex[self.oGeometry.aEdge[i, 1], 0]
     
         fig, ax = plt.subplots(figsize = (15, 10))
-        ax.plot(aX, aY)
+        ax.plot(x_values, y_values)
         ax.set_aspect('equal', 'datalim')
         
-    def makePolarPlot(self, aFrequency):
-        aSamples, _, aAngle = semiCircle(5, 180, "yz")
-        aSamples = aSamples[:, 1:3] # project down to 2D
+    def make_polar_plot(self, frequencies):
+        samples, _, angles = semi_circle(5, 180, "yz")
+        samples = samples[:, 1:3]  # project down to 2D
         solver = RayleighCavitySolverRAD(self.chain())
-        boundaryCondition = solver.neumannBoundaryCondition()
-        driverPartition = np.asarray(solver.oGeometry.namedPartition['driver'])
-        driverPartition = driverPartition - solver.oGeometry.namedPartition['interface'][1]
+        boundary_condition = solver.neumann_boundary_condition()
+        driver_partition = np.asarray(solver.geometry.namedPartition['driver'])
+        driver_partition = driver_partition - solver.geometry.namedPartition['interface'][1]
         # set only driver to velocity 1, horn walls are v = 0.
-        for i in range(driverPartition[0], driverPartition[1]):
-            boundaryCondition.f[i] = 1.0
+        for i in range(driver_partition[0], driver_partition[1]):
+            boundary_condition.f[i] = 1.0
 
-        aK = frequencyToWavenumber(aFrequency)
-        aMagnitudes = Parallel(n_jobs=4)(delayed(HalfSpaceHorn.magnitude)
-                                         (k, solver, boundaryCondition, aSamples) for k in aK)
-        '''
-        aMagnitudes = []
-        for k in aK:
-            aMagnitudes.append(HalfSpaceHorn.magnitude(k, solver, boundaryCondition, aSamples))
-        '''
-        polarPlot(self.name + " into Half-Space", aFrequency, aAngle, aMagnitudes)
+        wavenumbers = frequency_to_wavenumber(frequencies)
+        magnitudes = Parallel(n_jobs=4)(delayed(HalfSpaceHorn.magnitude)
+                                         (k, solver, boundary_condition,
+                                          samples) for k in wavenumbers)
+        polar_plot(self.name + " into Half-Space", frequencies, angles, magnitudes)
         
-    def makePolarMap(self):
-        aSamples, _, aAngle = semiCircle(5, 180, "yz")
-        aSamples = aSamples[:, 1:3] # project down to 2D
+    def make_polar_map(self):
+        samples, _, angles = semi_circle(5, 180, "yz")
+        samples = samples[:, 1:3] # project down to 2D
         solver = RayleighCavitySolverRAD(self.chain())
 
-        nBoundaryElements = solver.numberOfElements()
-        boundaryCondition = solver.neumannBoundaryCondition()
-        driverPartition = np.asarray(solver.oGeometry.namedPartition['driver'])
-        driverPartition = driverPartition - solver.oGeometry.namedPartition['interface'][1]
+        boundary_elements = solver.len()
+        boundary_condition = solver.neumann_boundary_condition()
+        driver_partition = np.asarray(solver.geometry.namedPartition['driver'])
+        driver_partition = driver_partition - solver.geometry.namedPartition['interface'][1]
         # set only driver to velocity 1, horn walls are v = 0.
-        for i in range(driverPartition[0], driverPartition[1]):
-            boundaryCondition.f[i] = 1.0
+        for i in range(driver_partition[0], driver_partition[1]):
+            boundary_condition.f[i] = 1.0
 
-        aFrequency = np.logspace(np.log10(self.frequencyRange[0]), np.log10(self.frequencyRange[1]), self.frequencySamples)
-        aWavenumber = frequencyToWavenumber(aFrequency)
+        frequencies = np.logspace(np.log10(self.frequencyRange[0]),
+                                  np.log10(self.frequencyRange[1]),
+                                  self.frequencySamples)
+        wavenumbers = frequency_to_wavenumber(frequencies)
 
-        aMagnitudes = Parallel(n_jobs=4)(delayed(HalfSpaceHorn.magnitude)
-                                         (k, solver, boundaryCondition, aSamples) for k in aWavenumber)
-        aMagnitudes = np.asarray(aMagnitudes).transpose()
+        magnitutes = Parallel(n_jobs=4)(delayed(HalfSpaceHorn.magnitude)
+                                         (k, solver, boundary_condition, samples) for k in wavenumbers)
+        magnitutes = np.asarray(magnitutes).transpose()
 
-        plotPolarMap(self.name + " - Directivity Map",
-                     aFrequency, aAngle, aMagnitudes, 3)
+        plot_polar_map(self.name + " - Directivity Map",
+                       frequencies, angles, magnitutes, 3)
 
-    def makeImpedancePlot(self):
+    def make_impedance_plot(self):
         solver = RayleighCavitySolverRAD(self.chain())
 
-        nBoundaryElements = solver.numberOfElements()
-        boundaryCondition = solver.neumannBoundaryCondition()
-        driverPartition = np.asarray(solver.oGeometry.namedPartition['driver'])
-        driverPartition = driverPartition - solver.oGeometry.namedPartition['interface'][1]
+        boundary_elements = solver.len()
+        boundary_condition = solver.neumann_boundary_condition()
+        driver_partition = np.asarray(solver.geometry.namedPartition['driver'])
+        driver_partition = driver_partition - solver.geometry.namedPartition['interface'][1]
         # set only driver to velocity 1, horn walls are v = 0.
-        for i in range(driverPartition[0], driverPartition[1]):
-            boundaryCondition.f[i] = 1.0
+        for i in range(driver_partition[0], driver_partition[1]):
+            boundary_condition.f[i] = 1.0
             
-        aFrequency = np.logspace(np.log10(self.frequencyRange[0]), np.log10(self.frequencyRange[1]), self.frequencySamples)
-        aK = frequencyToWavenumber(aFrequency)
+        frequencies = np.logspace(np.log10(self.frequencyRange[0]),
+                                  np.log10(self.frequencyRange[1]),
+                                  self.frequencySamples)
+        wavenumbers = frequency_to_wavenumber(frequencies)
         
-        aZm = Parallel(n_jobs=4)(delayed(HalfSpaceHorn.mechanicalImpedance)
-                                 (k, solver, boundaryCondition) for k in aK)
-        aZm = -1.0 * np.asarray(aZm) # -1 because of normals point outside of cavity
+        mechanical_impedances = Parallel(n_jobs=4)(delayed(HalfSpaceHorn.mechanica_iImpedance)
+                                 (k, solver, boundary_condition) for k in wavenumbers)
+        # -1 because of normals point outside of cavity
+        mechanical_impedances = -1.0 * np.asarray(mechanical_impedances)
 
-        plotMechanicalImpedance(self.name + " in Infinite Baffle - Mechanical Impedance", 
-                        aFrequency, aZm)
+        plot_mechanical_impedance(self.name + " in Infinite Baffle - Mechanical Impedance",
+                                  frequencies, mechanical_impedances)
         
     @staticmethod
-    def magnitude(k, solver, boundaryCondition, aSamples):
-        solution = solver.solveBoundary(k, boundaryCondition)
-        sampleSolution = solver.solveExterior(solution, aSamples)
-        return SoundMagnitude(soundPressure(k, sampleSolution.aPhi))
+    def magnitude(k, solver, boundary_condition, samples):
+        solution = solver.solve_boundary(k, boundary_condition)
+        sample_solution = solver.solve_exterior(solution, samples)
+        return sound_magnitude(sound_pressure(k, sample_solution.aPhi))
 
     @staticmethod
-    def mechanicalImpedance(k, solver, boundaryCondition):
-        solution = solver.solveBoundary(k, boundaryCondition)
-        return solution.mechanicalImpedance('driver')
-    
+    def mechanica_iImpedance(k, solver, boundary_condition):
+        solution = solver.solve_boundary(k, boundary_condition)
+        return solution.mechanical_impedance('driver')

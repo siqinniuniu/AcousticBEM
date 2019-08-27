@@ -1,105 +1,106 @@
 from HalfSpaceHorn import *
 
-class TractrixHorn(HalfSpaceHorn):
-    def __init__(self, name, throatRadius, cutoffFrequency, maxElementSize = 0.01):
-        super(TractrixHorn, self).__init__(name, maxElementSize)
 
-        self.throatRadius   = throatRadius
-        self.mouthRadius    = 1.0 / frequencyToWavenumber(cutoffFrequency)
-        self.oGeometry      = None
+class TractrixHorn(HalfSpaceHorn):
+    def __init__(self, name, throat_radius, cutoff_frequency,
+                 max_element_size=0.01):
+        super(TractrixHorn, self).__init__(name, max_element_size)
+
+        self.throat_radius = throat_radius
+        self.mouth_radius = 1.0 / frequency_to_wavenumber(cutoff_frequency)
+        self.geometry = None
         
-        self.frequencySamples = 600
-        self.frequencyRange   = (16, 16000)
+        self.frequency_samples = 600
+        self.frequency_range   = (16, 16000)
 
     def z(self, r):
-        R_m = self.mouthRadius
-        rootTerm = np.sqrt(R_m ** 2 - r ** 2)
-        logTerm = R_m * np.log((R_m + rootTerm) / r)
-        return rootTerm - logTerm
+        mr = self.mouth_radius
+        root_term = np.sqrt(mr ** 2 - r ** 2)
+        log_term = mr * np.log((mr + root_term) / r)
+        return root_term - log_term
 
-    def samplesY(self):
-        radiusSpread = self.mouthRadius - self.throatRadius
-        nSamples = np.ceil(radiusSpread * 2.0 / self.maxElementSize)
-        return np.linspace(self.mouthRadius, self.throatRadius, nSamples)
+    def samples_y(self):
+        radius_spread = self.mouth_radius - self.throat_radius
+        samples = np.ceil(radius_spread * 2.0 / self.max_element_size)
+        return np.linspace(self.mouth_radius, self.throat_radius, samples)
 
-    def edgesOfPhysicalGroup(self, groupTag):
-        aTags = []
+    def edges_of_physical_group(self, group_tag):
+        tags = []
         # extract horn elements
-        elements = gmsh.model.getEntitiesForPhysicalGroup(1, groupTag)
-        nElements = 0
+        elements = gmsh.model.getEntitiesForPhysicalGroup(1, group_tag)
+        num_elements = 0
         for e in elements:
-            elementTypes, elementTags, nodeTags = gmsh.model.mesh.getElements(1, e)
-            assert len(elementTypes) == 1 and elementTypes[0] == 1 # only line segments
-            assert len(elementTags) == 1
-            assert len(nodeTags) == 1 and len(nodeTags[0]) == len(elementTags[0]) * 2
-            aTags.extend(nodeTags[0]) # extract line segment node tags
-            nElements += len(elementTags[0])
-        return aTags, nElements
+            element_types, element_tags, node_tags = gmsh.model.mesh.getElements(1, e)
+            assert len(element_types) == 1 and element_types[0] == 1  # only line segments
+            assert len(element_tags) == 1
+            assert len(node_tags) == 1 and len(node_tags[0]) == len(element_tags[0]) * 2
+            tags.extend(node_tags[0])  # extract line segment node tags
+            num_elements += len(element_tags[0])
+        return tags, num_elements
             
-    def chain(self, maxElementSize = None):
+    def chain(self, max_element_size = None):
         """Get a polygonal chain representing the horn geometry."""
         # check if cached polygonal chain is still good
-        if not (maxElementSize is None or maxElementSize == self.maxElementSize):
-            self.maxElementSize = maxElementSize
-            self.oGeometry = None
-        if self.oGeometry is None:
+        if not (max_element_size is None or max_element_size == self.max_element_size):
+            self.max_element_size = max_element_size
+            self.geometry = None
+        if self.geometry is None:
             gmsh.initialize()
             gmsh.option.setNumber("General.Terminal", 1)
             gmsh.model.add("Cone Speaker")
-            gmsh.model.geo.addPoint(0.0, 0.0, 0.0, self.maxElementSize, 1)
-            pointTag = 2
-            aSamplesY = self.samplesY()
-            for r in aSamplesY:
-                gmsh.model.geo.addPoint(0.0, r, self.z(r), self.maxElementSize, pointTag)
-                pointTag += 1
-            print("aSamplesY[-1] = {}".format(aSamplesY[-1]))
-            gmsh.model.geo.addPoint(0.0, 0.0, self.z(aSamplesY[-1]), self.maxElementSize, pointTag)
+            gmsh.model.geo.addPoint(0.0, 0.0, 0.0, self.max_element_size, 1)
+            point_tag = 2
+            samples_y = self.samples_y()
+            for r in samples_y:
+                gmsh.model.geo.addPoint(0.0, r, self.z(r), self.max_element_size, point_tag)
+                point_tag += 1
+            print("samples_y[-1] = {}".format(samples_y[-1]))
+            gmsh.model.geo.addPoint(0.0, 0.0, self.z(samples_y[-1]), self.max_element_size, point_tag)
 
-            for i in range(1, pointTag):
+            for i in range(1, point_tag):
                 gmsh.model.geo.addLine(i, i+1, i)
             
             gmsh.model.addPhysicalGroup(1, [1], 1)
             # gmsh.model.setPhysicalName(1, 1, "Interface")
-            gmsh.model.addPhysicalGroup(1, list(range(2, pointTag-1)), 2)
+            gmsh.model.addPhysicalGroup(1, list(range(2, point_tag-1)), 2)
             # gmsh.model.setPhysicalName(1, 2, "Horn")
-            gmsh.model.addPhysicalGroup(1, [pointTag-1], 3)
+            gmsh.model.addPhysicalGroup(1, [point_tag-1], 3)
             # gmsh.model.setPhysicalName(1, 3, "Driver")
 
             gmsh.model.geo.synchronize()
        
             gmsh.model.mesh.generate(1)
-            nodeTags, coord, parametricCoord = gmsh.model.mesh.getNodes(1, -1, True)
-            aVertex = np.asarray(coord, dtype=np.float32).reshape(len(nodeTags), 3)
+            node_tags, coord, parametric_coord = gmsh.model.mesh.getNodes(1, -1, True)
+            vertices = np.asarray(coord, dtype=np.float32).reshape(len(node_tags), 3)
             # build reordering dictionary
-            nodeTagToIdx = dict()
-            for i, t in enumerate(nodeTags):
-                nodeTagToIdx[t] = i
-            aNodeTags = []
+            node_tag_to_idx = dict()
+            for i, t in enumerate(node_tags):
+                node_tag_to_idx[t] = i
+            node_tags = []
 
             # extract "open elements" or "Interface" first
-            nodeTags, nInterfaceElements = self.edgesOfPhysicalGroup(1)
-            aNodeTags.extend(nodeTags)
+            node_tags, interface_elements = self.edges_of_physical_group(1)
+            node_tags.extend(node_tags)
             # extract horn elements
-            nodeTags, nHornElements = self.edgesOfPhysicalGroup(2)
-            aNodeTags.extend(nodeTags)
+            node_tags, horn_elements = self.edges_of_physical_group(2)
+            node_tags.extend(node_tags)
             # extract driver elements
-            nodeTags, nDriverElements = self.edgesOfPhysicalGroup(3)
-            aNodeTags.extend(nodeTags)
+            node_tags, driver_elements = self.edges_of_physical_group(3)
+            node_tags.extend(node_tags)
 
             # relabel node tags with index into vertex array
-            aTempNodeTags = np.empty(len(aNodeTags), dtype=np.int32)
-            for i, t in enumerate(aNodeTags):
-                aTempNodeTags[i] = nodeTagToIdx[t]
-            aSegment = aTempNodeTags.reshape(len(aNodeTags) // 2, 2)
+            temp_node_tags = np.empty(len(node_tags), dtype=np.int32)
+            for i, t in enumerate(node_tags):
+                temp_node_tags[i] = node_tag_to_idx[t]
+            segments = temp_node_tags.reshape(len(node_tags) // 2, 2)
             gmsh.finalize()
             
-            self.oGeometry = Chain(aVertex.shape[0], aSegment.shape[0])
-            self.oGeometry.aVertex = aVertex[:, 1:3]
-            self.oGeometry.aEdge = aSegment
-            self.oGeometry.namedPartition['interface'] = (0, nInterfaceElements)
-            self.oGeometry.namedPartition['horn'] = (nInterfaceElements, nInterfaceElements + nHornElements)
-            self.oGeometry.namedPartition['driver'] = (nInterfaceElements + nHornElements,
-                                                       nInterfaceElements + nHornElements + nDriverElements)
+            self.geometry = Chain(vertices.shape[0], segments.shape[0])
+            self.geometry.vertices = vertices[:, 1:3]
+            self.geometry.edges = segments
+            self.geometry.named_partition['interface'] = (0, interface_elements)
+            self.geometry.named_partition['horn'] = (interface_elements, interface_elements + horn_elements)
+            self.geometry.named_partition['driver'] = (interface_elements + horn_elements,
+                                                       interface_elements + horn_elements + driver_elements)
             
-        return self.oGeometry
-    
+        return self.geometry

@@ -27,72 +27,72 @@ else:
 
 
 class RayleighCavitySolverRAD(RayleighCavitySolver):
-    def __init__(self, oChain, c = 344.0, density = 1.205):
-        super(RayleighCavitySolverRAD, self).__init__(oChain, c, density)
-        self.aCenters = self.oGeometry.centers()
-        self.aLength = self.oGeometry.lengths()
-        self.aNormals = self.oGeometry.normals()
-        self.aArea = None
+    def __init__(self, chain, c=344.0, density=1.205):
+        super(RayleighCavitySolverRAD, self).__init__(chain, c, density)
+        self.centers = self.geometry.centers()
+        self.lengths = self.geometry.lengths()
+        self.normals = self.geometry.normals()
+        self.areas = None
 
-    def elementArea(self, namedPartition = None):
-        return self.oGeometry.areas(namedPartition)
+    def element_area(self, named_partition=None):
+        return self.geometry.areas(named_partition)
         
-    def cavityNormals(self):
-        cavityStart = self.oGeometry.namedPartition['cavity'][0]
-        cavityEnd   = self.oGeometry.namedPartition['cavity'][1]
-        return self.aNormals[cavityStart:cavityEnd, :]
+    def cavity_normals(self):
+        cavity_start = self.geometry.namedPartition['cavity'][0]
+        cavity_end = self.geometry.namedPartition['cavity'][1]
+        return self.normals[cavity_start:cavity_end, :]
 
-    def computeBoundaryMatrix(self, k, alpha, beta):
-        m = self.nOpenElements
-        n = self.totalNumberOfElements() - m
+    def compute_boundary_matrix(self, k, alpha, beta):
+        m = self.open_elements
+        n = self.total_number_of_elements() - m
         M = np.zeros((2*(m+n), 2*(m+n)), dtype=np.complex64)
 
         # Compute the top half of the "big matrix".
         for i in range(m+n):
-            p = self.aCenters[i]
+            p = self.centers[i]
             for j in range(m+n):
-                qa, qb = self.oGeometry.edgeVertices(j)
+                qa, qb = self.geometry.edge_vertices(j)
 
-                elementM  = ComputeM(k, p, qa, qb, i==j)
-                elementL  = ComputeL(k, p, qa, qb, i==j)
+                element_m = compute_m(k, p, qa, qb, i == j)
+                element_l = compute_l(k, p, qa, qb, i == j)
 
-                M[i, j]         = -elementM
-                M[i, j + m + n] =  elementL
+                M[i,         j] = -element_m
+                M[i, j + m + n] = element_l
 
-            M[i, i] -= 0.5 # subtract half a "identity matrix" from the M-factor submatrix
+            M[i, i] -= 0.5  # subtract half a "identity matrix" from the M-factor submatrix
 
         # Fill in the bottom half of the "big matrix".
-        M[m+n:2*m+n, 0:m]               = np.eye(m, dtype=np.float32)
-        M[2*m+n:2*(m+n), m:m+n]         = np.diag(alpha)
-        M[m+n:2*m+n, m+n:2*m+n]         = 2.0 * M[0:m, m+n:2*m+n]
+        M[m+n:2*m+n,               0:m] = np.eye(m, dtype=np.float32)
+        M[2*m+n:2*(m+n),         m:m+n] = np.diag(alpha)
+        M[m+n:2*m+n,         m+n:2*m+n] = 2.0 * M[0:m, m+n:2*m+n]
         M[2*m+n:2*(m+n), 2*m+n:2*(m+n)] = np.diag(beta)
         return M
 
-    def solveInterior(self, solution, aSamples):
-        aPhi = np.empty(aSamples.shape[0], dtype=complex)
+    def solve_interior(self, solution, samples):
+        phis = np.empty(samples.shape[0], dtype=complex)
 
-        for i in range(aSamples.shape[0]):
-            p = aSamples[i,:]
+        for i in range(samples.shape[0]):
+            p = samples[i, :]
             sum = 0.0
-            for j in range(solution.aPhi.size):
-                qa, qb = self.oGeometry.edgeVertices(j)
-                elementL  = ComputeL(solution.k, p, qa, qb, False)
-                elementM  = ComputeM(solution.k, p, qa, qb, False)
-                sum += elementL * solution.aV[j] - elementM * solution.aPhi[j]
-            aPhi[i] = sum
+            for j in range(solution.phis.size):
+                qa, qb = self.geometry.edge_vertices(j)
+                element_l = compute_l(solution.k, p, qa, qb, False)
+                element_m = compute_m(solution.k, p, qa, qb, False)
+                sum += element_l * solution.velocities[j] - element_m * solution.phis[j]
+            phis[i] = sum
 
-        return SampleSolution(solution, aPhi)
+        return SampleSolution(solution, phis)
 
-    def solveExterior(self, solution, aSamples):
-        aPhi = np.empty(aSamples.shape[0], dtype=complex)
+    def solve_exterior(self, solution, samples):
+        phis = np.empty(samples.shape[0], dtype=complex)
 
-        for i in range(aSamples.shape[0]):
-            p = aSamples[i,:]
+        for i in range(samples.shape[0]):
+            p = samples[i, :]
             sum = 0.0
-            for j in range(self.nOpenElements):
-                qa, qb = self.oGeometry.edgeVertices(j)
-                elementL  = ComputeL(solution.k, p, qa, qb, False)
-                sum += -2.0 * elementL * solution.aV[j]
-            aPhi[i] = sum
+            for j in range(self.open_elements):
+                qa, qb = self.geometry.edge_vertices(j)
+                element_l = compute_l(solution.k, p, qa, qb, False)
+                sum += -2.0 * element_l * solution.velocities[j]
+            phis[i] = sum
 
-        return SampleSolution(solution, aPhi)
+        return SampleSolution(solution, phis)

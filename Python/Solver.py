@@ -18,34 +18,34 @@
 from BoundaryData import *
 
 class Solver(object):
-    def __init__(self, oGeometry, c = 344.0, density = 1.205):
-        self.oGeometry = oGeometry
-        self.c        = c
-        self.density  = density
+    def __init__(self, geometry, c=344.0, density=1.205):
+        self.geometry = geometry
+        self.c = c
+        self.density = density
 
     def __repr__(self):
         result = self.__class__.__name__ + "("
-        result += "  oGeometry = " + repr(self.oGeometry) + ", "
+        result += "  oGeometry = " + repr(self.geometry) + ", "
         result += "  c = " + repr(self.c) + ", "
         result += "  density = " + repr(self.density) + ")"
         return result
 
-    def numberOfElements(self):
-        return self.oGeometry.numberOfElements()
+    def len(self):
+        return self.geometry.len()
 
-    def dirichletBoundaryCondition(self):
+    def dirichlet_boundary_condition(self):
         """Returns a boundary contidition with alpha the 1-function and f and beta 0-functions."""
-        boundaryCondition = BoundaryCondition(self.numberOfElements())
-        boundaryCondition.alpha.fill(1.0)
-        boundaryCondition.beta.fill(0.0)
-        boundaryCondition.f.fill(1.0)
-        return boundaryCondition
+        bc = BoundaryCondition(self.len())
+        bc.alpha.fill(1.0)
+        bc.beta.fill(0.0)
+        bc.f.fill(1.0)
+        return bc
 
-    def neumannBoundaryCondition(self):
+    def neumann_boundary_condition(self):
         """Returns a boundary contidition with f and alpha 0-functions and beta the 1-function."""
-        boundaryCondition = BoundaryCondition(self.numberOfElements())
-        boundaryCondition.alpha.fill(0.0)
-        boundaryCondition.beta.fill(1.0)
-        boundaryCondition.f.fill(0.0)
-        return boundaryCondition
+        bc = BoundaryCondition(self.len())
+        bc.alpha.fill(0.0)
+        bc.beta.fill(1.0)
+        bc.f.fill(0.0)
+        return bc
 

@@ -1,6 +1,6 @@
 import numpy as np
 
-def semiCircle(r, samples, plane):
+def semi_circle(r, samples, plane):
     distance = 0.5
     aAngle = np.linspace(-0.5 * np.pi, 0.5 * np.pi, num=samples)
     aVertex = np.empty((samples, 3), dtype=np.float32)

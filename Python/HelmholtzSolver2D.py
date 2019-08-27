@@ -29,29 +29,29 @@ import numpy as np
 
 
 class HelmholtzSolver2D(HelmholtzSolver):
-    def __init__(self, oChain, c = 344.0, density = 1.205):
-        super(HelmholtzSolver2D, self).__init__(oChain, c, density)
-        self.aCenters = self.oGeometry.centers()
+    def __init__(self, chain, c=344.0, density=1.205):
+        super(HelmholtzSolver2D, self).__init__(chain, c, density)
+        self.centers = self.geometry.centers()
         # lenght of the boundary elements (for the 3d shapes this is replaced by aArea
-        self.aLength = self.oGeometry.lengths()
+        self.lengths = self.geometry.lengths()
 
-    def computeBoundaryMatrices(self, k, mu, orientation):
-        A = np.empty((self.numberOfElements(), self.numberOfElements()), dtype=complex)
+    def compute_boundary_matrices(self, k, mu, orientation):
+        A = np.empty((self.len(), self.len()), dtype=complex)
         B = np.empty(A.shape, dtype=complex)
 
-        aCenter = self.oGeometry.centers()
-        aNormal = -self.oGeometry.normals()
+        centers = self.geometry.centers()
+        normals = -self.geometry.normals()
         
-        for i in range(self.numberOfElements()):
-            center = aCenter[i]
-            centerNormal = aNormal[i]
-            for j in range(self.numberOfElements()):
-                qa, qb = self.oGeometry.edgeVertices(j)
+        for i in range(self.len()):
+            center = centers[i]
+            normal = normals[i]
+            for j in range(self.len()):
+                qa, qb = self.geometry.edge_vertices(j)
 
-                elementL  = ComputeL(k, center, qa, qb, i==j)
-                elementM  = ComputeM(k, center, qa, qb, i==j)
-                elementMt = ComputeMt(k, center, centerNormal, qa, qb, i==j)
-                elementN  = ComputeN(k, center, centerNormal, qa, qb, i==j)
+                elementL  = compute_l(k, center, qa, qb, i == j)
+                elementM  = compute_m(k, center, qa, qb, i == j)
+                elementMt = compute_mt(k, center, normal, qa, qb, i == j)
+                elementN  = compute_n(k, center, normal, qa, qb, i == j)
                 
                 A[i, j] = elementL + mu * elementMt
                 B[i, j] = elementM + mu * elementN
@@ -68,13 +68,13 @@ class HelmholtzSolver2D(HelmholtzSolver):
                 
         return A, B
 
-    def computeBoundaryMatricesInterior(self, k, mu):
-        return self.computeBoundaryMatrices(k, mu, 'interior')
+    def compute_boundary_matrices_interior(self, k, mu):
+        return self.compute_boundary_matrices(k, mu, 'interior')
     
-    def computeBoundaryMatricesExterior(self, k, mu):
-        return self.computeBoundaryMatrices(k, mu, 'exterior')
+    def compute_boundary_matrices_exterior(self, k, mu):
+        return self.compute_boundary_matrices(k, mu, 'exterior')
 
-    def solveSamples(self, solution, aIncidentPhi, aSamples, orientation):
+    def solve_samples(self, solution, aIncidentPhi, aSamples, orientation):
         assert aIncidentPhi.shape == aSamples.shape[:-1], \
             "Incident phi vector and sample points vector must match"
 
@@ -83,25 +83,26 @@ class HelmholtzSolver2D(HelmholtzSolver):
         for i in range(aIncidentPhi.size):
             p  = aSamples[i]
             sum = aIncidentPhi[i]
-            for j in range(solution.aPhi.size):
-                qa, qb = self.oGeometry.edgeVertices(j)
+            for j in range(solution.phis.size):
+                qa, qb = self.geometry.edge_vertices(j)
 
-                elementL  = ComputeL(solution.k, p, qa, qb, False)
-                elementM  = ComputeM(solution.k, p, qa, qb, False)
+                elementL  = compute_l(solution.k, p, qa, qb, False)
+                elementM  = compute_m(solution.k, p, qa, qb, False)
                 if orientation == 'interior':
-                    sum += elementL * solution.aV[j] - elementM * solution.aPhi[j]
+                    sum += elementL * solution.velocities[j] - elementM * solution.phis[j]
                 elif orientation == 'exterior':
-                    sum -= elementL * solution.aV[j] - elementM * solution.aPhi[j]
+                    sum -= elementL * solution.velocities[j] - elementM * solution.phis[j]
                 else:
                     assert False, 'Invalid orientation: {}'.format(orientation)
             aResult[i] = sum
         return aResult
 
+
 class InteriorHelmholtzSolver2D(HelmholtzSolver2D):
-    def solveBoundary(self, k, boundaryCondition, boundaryIncidence, mu = None):
-        return super(InteriorHelmholtzSolver2D, self).solveBoundary('interior', k, boundaryCondition, boundaryIncidence, mu)
+    def solve_boundary(self, k, boundary_condition, boundary_incidence, mu = None):
+        return super(InteriorHelmholtzSolver2D, self).solve_boundary('interior', k, boundary_condition, boundary_incidence, mu)
+
 
 class ExteriorHelmholtzSolver2D(HelmholtzSolver2D):
-    def solveBoundary(self, k, boundaryCondition, boundaryIncidence, mu = None):
-        return super(ExteriorHelmholtzSolver2D, self).solveBoundary('exterior', k, boundaryCondition, boundaryIncidence, mu)
-
+    def solve_boundary(self, k, boundary_condition, boundary_incidence, mu = None):
+        return super(ExteriorHelmholtzSolver2D, self).solve_boundary('exterior', k, boundary_condition, boundary_incidence, mu)

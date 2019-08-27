@@ -20,31 +20,32 @@ from Solver import *
 from BoundaryData import *
 from Geometry import *
 
+
 class HelmholtzSolver(Solver):
 
-    def solveBoundary(self, orientation, k, boundaryCondition, boundaryIncidence, mu = None):
+    def solve_boundary(self, orientation, k, boundary_condition, boundary_incidence, mu=None):
         mu = mu or (1j / (k + 1))
-        assert boundaryCondition.f.size == self.numberOfElements()
-        A, B = self.computeBoundaryMatrices(k, mu, orientation)
-        c = np.empty(self.numberOfElements(), dtype=complex)
-        for i in range(self.numberOfElements()):
-            c[i] = boundaryIncidence.phi[i] + mu * boundaryIncidence.v[i]
+        assert boundary_condition.f.size == self.len()
+        A, B = self.compute_boundary_matrices(k, mu, orientation)
+        c = np.empty(self.len(), dtype=complex)
+        for i in range(self.len()):
+            c[i] = boundary_incidence.phi[i] + mu * boundary_incidence.v[i]
         if 'exterior' == orientation:
             c = -1.0 * c
         else:
             assert 'interior' == orientation, "orientation must be either 'interior' or 'exterior'"
 
-        phi, v = self.SolveLinearEquation(B, A, c,
-                                          boundaryCondition.alpha,
-                                          boundaryCondition.beta,
-                                          boundaryCondition.f)
+        phi, v = self.solve_linear_equation(B, A, c,
+                                            boundary_condition.alpha,
+                                            boundary_condition.beta,
+                                            boundary_condition.f)
         if 'exterior' == orientation:
-            return ExteriorBoundarySolution(self, boundaryCondition, k, phi, v)
+            return ExteriorBoundarySolution(self, boundary_condition, k, phi, v)
         else:
-            return InteriorBoundarySolution(self, boundaryCondition, k, phi, v)
+            return InteriorBoundarySolution(self, boundary_condition, k, phi, v)
         
     @classmethod
-    def SolveLinearEquation(cls, Ai, Bi, ci, alpha, beta, f):
+    def solve_linear_equation(cls, Ai, Bi, ci, alpha, beta, f):
         A = np.copy(Ai)
         B = np.copy(Bi)
         c = np.copy(ci)

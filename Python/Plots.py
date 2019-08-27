@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def polarPlot(title, frequencies, angles, magnitudes):
+
+def polar_plot(title, frequencies, angles, magnitudes):
     fig = plt.figure(figsize=(15, 15))
     ax = fig.add_axes([0.1, 0.1, 0.8, 0.8], projection='polar')
     ax.set_title(title)
@@ -12,8 +13,9 @@ def polarPlot(title, frequencies, angles, magnitudes):
     ax.set_rlabel_position(100.0)  # get radial labels away from plotted line
     ax.grid(True)
     plt.show()
-    
-def plotPolarMap(title, frequencies, angles, magnitudes, stepSize = 6):
+
+
+def plot_polar_map(title, frequencies, angles, magnitudes, stepSize = 6):
     X, Y = np.meshgrid(frequencies, angles)
 
     minMagnitude = np.floor(np.min(magnitudes) / stepSize) * stepSize
@@ -30,8 +32,9 @@ def plotPolarMap(title, frequencies, angles, magnitudes, stepSize = 6):
 
     cbar = fig.colorbar(CS)
     cbar.ax.set_ylabel('Sound Magnitude [dB]')
-    
-def plotMechanicalImpedance(title, frequencies, impedance):
+
+
+def plot_mechanical_impedance(title, frequencies, impedance):
     fig, ax = plt.subplots(figsize = (15, 10))
     ax.set_title(title)
     ax.set_xlabel('Frequency [Hz]')

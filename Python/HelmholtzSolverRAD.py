@@ -26,79 +26,85 @@ else:
 
 
 class HelmholtzSolverRAD(HelmholtzSolver):
-    def __init__(self, oChain, c = 344.0, density = 1.205):
-        super(HelmholtzSolverRAD, self).__init__(oChain, c, density)
-        self.aCenters = self.oGeometry.centers()
-        # area of the boundary alements
-        self.aArea = self.oGeometry.areas()
+    def __init__(self, chain, c=344.0, density=1.205):
+        super(HelmholtzSolverRAD, self).__init__(chain, c, density)
+        self.centers = self.geometry.centers()
+        # area of the boundary elements
+        self.area = self.geometry.areas()
 
-    def computeBoundaryMatrices(self, k, mu, orientation):
-        A = np.empty((self.numberOfElements(), self.numberOfElements()), dtype=complex)
+    def compute_boundary_matrices(self, k, mu, orientation):
+        A = np.empty((self.len(), self.len()), dtype=complex)
         B = np.empty(A.shape, dtype=complex)
 
-        aCenter = self.oGeometry.centers()
-        aNormal = self.oGeometry.normals()
+        centers = self.geometry.centers()
+        normals = self.geometry.normals()
         
-        for i in range(self.numberOfElements()):
-            center = aCenter[i]
-            centerNormal = -aNormal[i]
-            for j in range(self.numberOfElements()):
-                qa, qb = self.oGeometry.edgeVertices(j)
+        for i in range(self.len()):
+            center = centers[i]
+            normal = -normals[i]
+            for j in range(self.len()):
+                qa, qb = self.geometry.edge_vertices(j)
 
-                elementL  = ComputeL(k, center, qa, qb, i==j)
-                elementM  = ComputeM(k, center, qa, qb, i==j)
-                elementMt = ComputeMt(k, center, centerNormal, qa, qb, i==j)
-                elementN  = ComputeN(k, center, centerNormal, qa, qb, i==j)
+                element_l = compute_l(k, center, qa, qb, i == j)
+                element_m = compute_m(k, center, qa, qb, i == j)
+                element_mt = compute_mt(k, center, normal, qa, qb, i == j)
+                element_n = compute_n(k, center, normal, qa, qb, i == j)
                 
-                A[i, j] = elementL + mu * elementMt
-                B[i, j] = elementM + mu * elementN
+                A[i, j] = element_l + mu * element_mt
+                B[i, j] = element_m + mu * element_n
 
             if orientation == 'interior':
-                A[i,i] -= 0.5 * mu
-                B[i,i] += 0.5
+                A[i, i] -= 0.5 * mu
+                B[i, i] += 0.5
             elif orientation == 'exterior':
-                A[i,i] += 0.5 * mu
-                B[i,i] -= 0.5
+                A[i, i] += 0.5 * mu
+                B[i, i] -= 0.5
             else:
                 assert False, 'Invalid orientation: {}'.format(orientation)
 
         return A, B
 
-    def computeBoundaryMatricesInterior(self, k, mu):
-        return self.computeBoundaryMatrices(k, mu, 'interior')
+    def compute_boundary_matrices_interior(self, k, mu):
+        return self.compute_boundary_matrices(k, mu, 'interior')
     
-    def computeBoundaryMatricesExterior(self, k, mu):
-        return self.computeBoundaryMatrices(k, mu, 'exterior')
+    def compute_boundary_matrices_exterior(self, k, mu):
+        return self.compute_boundary_matrices(k, mu, 'exterior')
     
-    def solveSamples(self, solution, aIncidentPhi, aSamples, orientation):
-        assert aIncidentPhi.shape == aSamples.shape[:-1], \
+    def solve_samples(self, solution, incident_phis, samples, orientation):
+        assert incident_phis.shape == samples.shape[:-1], \
             "Incident phi vector and samples vector must match"
 
-        aResult = np.empty(aSamples.shape[0], dtype=complex)
+        results = np.empty(samples.shape[0], dtype=complex)
+        for i in range(incident_phis.size):
+            p = samples[i]
+            sum = incident_phis[i]
+            for j in range(solution.phis.size):
+                qa, qb = self.geometry.edge_vertices(j)
 
-        for i in range(aIncidentPhi.size):
-            p  = aSamples[i]
-            sum = aIncidentPhi[i]
-            for j in range(solution.aPhi.size):
-                qa, qb = self.oGeometry.edgeVertices(j)
-
-                elementL  = ComputeL(solution.k, p, qa, qb, False)
-                elementM  = ComputeM(solution.k, p, qa, qb, False)
+                element_l = compute_l(solution.k, p, qa, qb, False)
+                element_m = compute_m(solution.k, p, qa, qb, False)
 
                 if orientation == 'interior':
-                    sum += elementL * solution.aV[j] - elementM * solution.aPhi[j]
+                    sum += element_l * solution.velocities[j] - element_m * solution.phis[j]
                 elif orientation == 'exterior':
-                    sum -= elementL * solution.aV[j] - elementM * solution.aPhi[j]
+                    sum -= element_l * solution.velocities[j] - element_m * solution.phis[j]
                 else:
                     assert False, 'Invalid orientation: {}'.format(orientation)
-            aResult[i] = sum
-        return aResult
+            results[i] = sum
+        return results
 
 class InteriorHelmholtzSolverRAD(HelmholtzSolverRAD):
-    def solveBoundary(self, k, boundaryCondition, boundaryIncidence, mu = None):
-        return super(InteriorHelmholtzSolverRAD, self).solveBoundary('interior', k, boundaryCondition, boundaryIncidence, mu)
+    def solve_boundary(self, k, boundary_condition, boundary_incidence, mu = None):
+        return super(InteriorHelmholtzSolverRAD,
+                     self).solve_boundary('interior', k,
+                                          boundary_condition, boundary_incidence,
+                                          mu)
+
 
 class ExteriorHelmholtzSolverRAD(HelmholtzSolverRAD):
-    def solveBoundary(self, k, boundaryCondition, boundaryIncidence, mu = None):
-        return super(ExteriorHelmholtzSolverRAD, self).solveBoundary('exterior', k, boundaryCondition, boundaryIncidence, mu)
+    def solve_boundary(self, k, boundary_condition, boundary_incidence, mu = None):
+        return super(ExteriorHelmholtzSolverRAD,
+                     self).solve_boundary('exterior', k,
+                                          boundary_condition, boundary_incidence,
+                                          mu)
 
