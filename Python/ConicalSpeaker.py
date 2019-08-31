@@ -79,13 +79,13 @@ class ConicalSpeaker(object):
             node_tag_to_idx = dict()
             for i, t in enumerate(node_tags):
                 node_tag_to_idx[t] = i
-            node_tags = []
+            node_tag_list = []
             # extract "open elements" or "Interface" first
             element_types, element_tags, node_tags = gmsh.model.mesh.getElements(1, 1)
             assert len(element_types) == 1 and element_types[0] == 1  # only line segments
             assert len(element_tags) == 1
             assert len(node_tags) == 1 and len(node_tags[0]) == len(element_tags[0]) * 2
-            node_tags.extend(node_tags[0])  # extract line segment node tags
+            node_tag_list.extend(node_tags[0])  # extract line segment node tags
             self.num_open_elements = len(element_tags[0])
             
             # extract speaker elements
@@ -93,19 +93,19 @@ class ConicalSpeaker(object):
             assert len(element_types) == 1 and element_types[0] == 1  # only line segments
             assert len(element_tags) == 1
             assert len(node_tags) == 1 and len(node_tags[0]) == len(element_tags[0]) * 2
-            node_tags.extend(node_tags[0])  # extract line segment node tags
+            node_tag_list.extend(node_tags[0])  # extract line segment node tags
             
             element_types, element_tags, node_tags = gmsh.model.mesh.getElements(1, 3)
             assert len(element_types) == 1 and element_types[0] == 1  # only line segments
             assert len(element_tags) == 1
             assert len(node_tags) == 1 and len(node_tags[0]) == len(element_tags[0]) * 2
-            node_tags.extend(node_tags[0])  # extract line segment node tags
+            node_tag_list.extend(node_tags[0])  # extract line segment node tags
             
             # relabel node tags with index into vertex array
-            temp_node_tags = np.empty(len(node_tags), dtype=np.int32)
-            for i, t in enumerate(node_tags):
+            temp_node_tags = np.empty(len(node_tag_list), dtype=np.int32)
+            for i, t in enumerate(node_tag_list):
                 temp_node_tags[i] = node_tag_to_idx[t]
-            self.segments = temp_node_tags.reshape(len(node_tags) // 2, 2)
+            self.segments = temp_node_tags.reshape(len(node_tag_list) // 2, 2)
             gmsh.finalize()
             
             self.geometry = Chain(self.vertices.shape[0], self.segments.shape[0])
@@ -194,7 +194,7 @@ class ConicalSpeaker(object):
     def magnitude(k, solver, boundary_condition, samples):
         solution = solver.solve_boundary(k, boundary_condition)
         sample_solution = solver.solve_exterior(solution, samples)
-        return sound_magnitude(sound_pressure(k, sample_solution.aPhi))
+        return sound_magnitude(sound_pressure(k, sample_solution.phis))
 
     @staticmethod
     def mechanical_impedance(k, solver, boundary_condition):

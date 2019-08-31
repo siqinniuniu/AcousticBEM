@@ -81,7 +81,7 @@ class BoundarySolution(object):
             return sound_pressure(self.k, self.phis, c=self.parent.c,
                                   density=self.parent.density)
         else:
-            range = self.parent.oGeometry.namedPartition[named_partition]
+            range = self.parent.geometry.named_partition[named_partition]
             return sound_pressure(self.k, self.phis[range[0]: range[1]],
                                   c=self.parent.c, density=self.parent.density)
 
@@ -104,7 +104,7 @@ class BoundarySolution(object):
         if named_partition is None:
             aV = self.velocities
         else:
-            partition = self.parent.oGeometry.namedPartition[named_partition]
+            partition = self.parent.geometry.named_partition[named_partition]
             aV = self.velocities[partition[0]:partition[1]]
         for p, a, v in zip(self.pressure(named_partition),
                            self.parent.element_area(named_partition),

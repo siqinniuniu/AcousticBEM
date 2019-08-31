@@ -16,17 +16,17 @@ class ConicalHorn(HalfSpaceHorn):
     def chain(self, max_element_size=None):
         """Get a polygonal chain representing the speaker membrane."""
         # check if cached polygonal chain is still good
-        if not (max_element_size is None or max_element_size == self.maxElementSize):
-            self.maxElementSize = max_element_size
+        if not (max_element_size is None or max_element_size == self.max_element_size):
+            self.max_element_size = max_element_size
             self.geometry = None
         if self.geometry is None:
             gmsh.initialize()
             gmsh.option.setNumber("General.Terminal", 1)
             gmsh.model.add("Cone Speaker")
-            gmsh.model.geo.addPoint(0.0, 0.0, 0.0, self.maxElementSize, 1)
-            gmsh.model.geo.addPoint(0.0, self.mouth_radius, 0.0, self.maxElementSize, 2)
-            gmsh.model.geo.addPoint(0.0, self.throat_radius, -self.length, self.maxElementSize, 3)
-            gmsh.model.geo.addPoint(0.0, 0.0, -self.length, self.maxElementSize, 4)
+            gmsh.model.geo.addPoint(0.0, 0.0, 0.0, self.max_element_size, 1)
+            gmsh.model.geo.addPoint(0.0, self.mouth_radius, 0.0, self.max_element_size, 2)
+            gmsh.model.geo.addPoint(0.0, self.throat_radius, -self.length, self.max_element_size, 3)
+            gmsh.model.geo.addPoint(0.0, 0.0, -self.length, self.max_element_size, 4)
         
             gmsh.model.geo.addLine(1, 2, 1)
             gmsh.model.addPhysicalGroup(1, [1], 1)
@@ -48,13 +48,13 @@ class ConicalHorn(HalfSpaceHorn):
             node_tag_to_idx = dict()
             for i, t in enumerate(node_tags):
                 node_tag_to_idx[t] = i
-            node_tags = []
+            node_tag_list = []
             # extract "open elements" or "Interface" first
             element_types, element_tags, node_tags = gmsh.model.mesh.getElements(1, 1)
             assert len(element_types) == 1 and element_types[0] == 1 # only line segments
             assert len(element_tags) == 1
             assert len(node_tags) == 1 and len(node_tags[0]) == len(element_tags[0]) * 2
-            node_tags.extend(node_tags[0]) # extract line segment node tags
+            node_tag_list.extend(node_tags[0]) # extract line segment node tags
             interface_elements = len(element_tags[0])
             
             # extract horn elements
@@ -62,7 +62,7 @@ class ConicalHorn(HalfSpaceHorn):
             assert len(element_types) == 1 and element_types[0] == 1 # only line segments
             assert len(element_tags) == 1
             assert len(node_tags) == 1 and len(node_tags[0]) == len(element_tags[0]) * 2
-            node_tags.extend(node_tags[0]) # extract line segment node tags
+            node_tag_list.extend(node_tags[0]) # extract line segment node tags
             horn_elements = len(element_tags[0])
             
             # extract driver elements
@@ -70,14 +70,14 @@ class ConicalHorn(HalfSpaceHorn):
             assert len(element_types) == 1 and element_types[0] == 1 # only line segments
             assert len(element_tags) == 1
             assert len(node_tags) == 1 and len(node_tags[0]) == len(element_tags[0]) * 2
-            node_tags.extend(node_tags[0]) # extract line segment node tags
+            node_tag_list.extend(node_tags[0]) # extract line segment node tags
             driver_elements = len(element_tags[0])
             
             # relabel node tags with index into vertex array
-            temp_node_tags = np.empty(len(node_tags), dtype=np.int32)
-            for i, t in enumerate(node_tags):
+            temp_node_tags = np.empty(len(node_tag_list), dtype=np.int32)
+            for i, t in enumerate(node_tag_list):
                 temp_node_tags[i] = node_tag_to_idx[t]
-            segments = temp_node_tags.reshape(len(node_tags) // 2, 2)
+            segments = temp_node_tags.reshape(len(node_tag_list) // 2, 2)
             gmsh.finalize()
             
             self.geometry = Chain(vertices.shape[0], segments.shape[0])
@@ -91,4 +91,3 @@ class ConicalHorn(HalfSpaceHorn):
                                                        + driver_elements)
             
         return self.geometry
-    

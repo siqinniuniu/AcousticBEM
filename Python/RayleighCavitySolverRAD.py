@@ -38,8 +38,8 @@ class RayleighCavitySolverRAD(RayleighCavitySolver):
         return self.geometry.areas(named_partition)
         
     def cavity_normals(self):
-        cavity_start = self.geometry.namedPartition['cavity'][0]
-        cavity_end = self.geometry.namedPartition['cavity'][1]
+        cavity_start = self.geometry.named_partition['cavity'][0]
+        cavity_end = self.geometry.named_partition['cavity'][1]
         return self.normals[cavity_start:cavity_end, :]
 
     def compute_boundary_matrix(self, k, alpha, beta):

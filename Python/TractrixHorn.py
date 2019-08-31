@@ -76,31 +76,33 @@ class TractrixHorn(HalfSpaceHorn):
             node_tag_to_idx = dict()
             for i, t in enumerate(node_tags):
                 node_tag_to_idx[t] = i
-            node_tags = []
+            node_tag_list = []
 
             # extract "open elements" or "Interface" first
             node_tags, interface_elements = self.edges_of_physical_group(1)
-            node_tags.extend(node_tags)
+            node_tag_list.extend(node_tags)
             # extract horn elements
             node_tags, horn_elements = self.edges_of_physical_group(2)
-            node_tags.extend(node_tags)
+            node_tag_list.extend(node_tags)
             # extract driver elements
             node_tags, driver_elements = self.edges_of_physical_group(3)
-            node_tags.extend(node_tags)
+            node_tag_list.extend(node_tags)
 
             # relabel node tags with index into vertex array
-            temp_node_tags = np.empty(len(node_tags), dtype=np.int32)
-            for i, t in enumerate(node_tags):
+            temp_node_tags = np.empty(len(node_tag_list), dtype=np.int32)
+            for i, t in enumerate(node_tag_list):
                 temp_node_tags[i] = node_tag_to_idx[t]
-            segments = temp_node_tags.reshape(len(node_tags) // 2, 2)
+            segments = temp_node_tags.reshape(len(node_tag_list) // 2, 2)
             gmsh.finalize()
             
             self.geometry = Chain(vertices.shape[0], segments.shape[0])
             self.geometry.vertices = vertices[:, 1:3]
             self.geometry.edges = segments
             self.geometry.named_partition['interface'] = (0, interface_elements)
-            self.geometry.named_partition['horn'] = (interface_elements, interface_elements + horn_elements)
+            self.geometry.named_partition['horn'] = (interface_elements,
+                                                     interface_elements + horn_elements)
             self.geometry.named_partition['driver'] = (interface_elements + horn_elements,
-                                                       interface_elements + horn_elements + driver_elements)
+                                                       interface_elements + horn_elements +
+                                                       driver_elements)
             
         return self.geometry
