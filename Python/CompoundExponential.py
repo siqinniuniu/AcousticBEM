@@ -20,9 +20,8 @@ class CompoundExponentialHorn(HalfSpaceHorn):
         return 0.95 * np.sin(self.angle) / self.cutoff_k
 
     def first_transition_z(self):
-        root, info = brentq(lambda z: self.exponential_radius(z) - self.first_transition_radius(),
-                            -self.length, 0.0)
-        assert info.converged
+        root = brentq(lambda z: self.exponential_radius(z) - self.first_transition_radius(),
+                      -self.length, 0.0)
         return root
 
     def second_transition_radius(self):
@@ -67,7 +66,7 @@ class CompoundExponentialHorn(HalfSpaceHorn):
     def chain(self, max_element_size=None):
         """Get a polygonal chain representing the horn geometry."""
         # check if cached polygonal chain is still good
-        if max_element_size is not None or max_element_size == self.max_element_size:
+        if not (max_element_size is None or max_element_size == self.max_element_size):
             self.max_element_size = max_element_size
             self.geometry = None
         if self.geometry is None:

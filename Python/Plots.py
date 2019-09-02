@@ -15,16 +15,16 @@ def polar_plot(title, frequencies, angles, magnitudes):
     plt.show()
 
 
-def plot_polar_map(title, frequencies, angles, magnitudes, stepSize = 6):
+def plot_polar_map(title, frequencies, angles, magnitudes, step_size=6):
     X, Y = np.meshgrid(frequencies, angles)
 
-    minMagnitude = np.floor(np.min(magnitudes) / stepSize) * stepSize
-    maxMagnitude = np.ceil(np.max(magnitudes) / stepSize) * stepSize
-    levels = (maxMagnitude - minMagnitude) // stepSize
+    minMagnitude = np.floor(np.min(magnitudes) / step_size) * step_size
+    maxMagnitude = np.ceil(np.max(magnitudes) / step_size) * step_size
+    levels = (maxMagnitude - minMagnitude) // step_size
 
-    fig, ax = plt.subplots(figsize = (18, 10))
+    fig, ax = plt.subplots(figsize=(18, 10))
     aLevel = np.linspace(minMagnitude, maxMagnitude, levels + 1)
-    CS = ax.contourf(X, Y, magnitudes, aLevel, cmap = plt.cm.seismic)
+    CS = ax.contourf(X, Y, magnitudes, aLevel, cmap=plt.cm.seismic)
     ax.set_title(title)
     ax.set_xlabel('Frequency [Hz]')
     ax.set_xscale("log") 
@@ -35,7 +35,7 @@ def plot_polar_map(title, frequencies, angles, magnitudes, stepSize = 6):
 
 
 def plot_mechanical_impedance(title, frequencies, impedance):
-    fig, ax = plt.subplots(figsize = (15, 10))
+    fig, ax = plt.subplots(figsize=(15, 10))
     ax.set_title(title)
     ax.set_xlabel('Frequency [Hz]')
     ax.set_xscale('log') 
@@ -43,4 +43,3 @@ def plot_mechanical_impedance(title, frequencies, impedance):
     ax.plot(frequencies, np.real(impedance), label='Real')
     ax.plot(frequencies, np.imag(impedance), label='Imaginary')
     ax.legend()
-

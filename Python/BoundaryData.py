@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------
-# Copyright (C) 2017 Frank Jargstorff
+# Copyright (C) 2017, 2019 Frank Jargstorff
 #
 # This file is part of the AcousticBEM library.
 # AcousticBEM is free software: you can redistribute it and/or modify
