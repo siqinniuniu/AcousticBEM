@@ -1,10 +1,15 @@
 from setuptools import setup
 
-setup(name='acoustic_bem',
-      version='0.0.1',
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
+setup(name='abem',
+      version='1.0a0',
       description='Boundary Element Method for Acoustic Simulations',
+      long_description=long_description,
+      long_description_content_type="text/markdown",
       url='http://github.com/fjargsto/AcousticBEM',
       author='Frank Jargstorff',
       license='GNU General Public License',
-      packages=['acoustic_bem'],
+      packages=['abem'],
       zip_safe=False)
