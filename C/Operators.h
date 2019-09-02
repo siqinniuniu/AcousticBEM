@@ -19,13 +19,13 @@
 
 #include <complex.h>
 
-/* Struct representing points in 2-dimensional Euclidian space. */
+/* Struct representing points in 2-dimensional Euclidean space. */
 typedef struct {
   float x;
   float y;
 } Float2;
 
-/* Struct representing pointsi n 3-dimensional Euclidian space. */
+/* Struct representing points in 3-dimensional Euclidean space. */
 typedef struct {
   float x;
   float y;
@@ -59,7 +59,7 @@ typedef struct {
   float *pW;  /* weights of the integration rule             */
 } IntRule1D;
 
-/* Integration method for line segements in 2-dimensional space.
+/* Integration method for line segments in 2-dimensional space.
  * Parameters:
  *   integrand - a function pointer to the function being integrated along
  *               the line segment.
@@ -67,7 +67,7 @@ typedef struct {
  *           Via this mechanism, the user of this method can pass additional state information
  *           to the integrand function.
  *   intRule - a 1-dimensional integration rule, which is being applied along the line segment.
- *   start - 2-dimensional start point of the line-segement being integrated along.
+ *   start - 2-dimensional start point of the line-segment being integrated along.
  *   end   - 2-dimensional end point of the line-segment being integrated along.
  */
 complex float complexQuad2D(complex float(*integrand)(Float2, void*), void * state, IntRule1D intRule, Float2 start, Float2 end);
