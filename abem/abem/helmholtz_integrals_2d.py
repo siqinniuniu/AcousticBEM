@@ -79,6 +79,7 @@ def compute_mt(k, p, vecp, qa, qb, p_on_element):
 
 
 def compute_n(k, p, vecp, qa, qb, p_on_element):
+    qab = qb - qa
     if p_on_element:
         ra = norm(p - qa)                                                                                          
         rb = norm(p - qb)                                                                                          
@@ -96,14 +97,14 @@ def compute_n(k, p, vecp, qa, qb, p_on_element):
                 drdudrdn = -np.dot(r, vecq) * np.dot(r, vecp) / R2                                                 
                 dpnu = np.dot(vecp, vecq)                                                                          
                 c1 = 0.25j * k / R * hankel1(1, k * R) - 0.5 / (np.pi * R2)
-                c2 = 0.50j * k / R * hankel1(1, k * R) - 0.25j * k2 * hankel1(0, k * R) \
-                     - 1.0 / (np.pi * R2)
+                c2 = 0.50j * k / R * hankel1(1, k * R) - 0.25j * k2 * \
+                    hankel1(0, k * R) - 1.0 / (np.pi * R2)
                 c3 = -0.25 * k2 * np.log(R) / np.pi
                 return c1 * dpnu + c2 * drdudrdn + c3
 
-            return compute_n(0.0, p, vecp, qa, qb, True) - 0.5 * k2 \
-                   * compute_l(0.0, p, qa, qb, True) \
-                   + complex_quad(func, qa, p) + complex_quad(func, p, qb)
+            return compute_n(0.0, p, vecp, qa, qb, True) - 0.5 * k2 * \
+                compute_l(0.0, p, qa, qb, True) + \
+                complex_quad(func, qa, p) + complex_quad(func, p, qb)
     else:                                                                                                          
         sum = 0.0j                                                                                                 
         vecq = normal_2d(qa, qb)
