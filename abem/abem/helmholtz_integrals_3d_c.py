@@ -1,4 +1,5 @@
-from .native_interface import *
+from .native_interface import Float3, Complex, intops
+from ctypes import c_bool, c_float, byref
 import numpy as np
 
 
@@ -9,7 +10,7 @@ def compute_l(k, p, qa, qb, qc, p_on_element):
     b = Float3(qb[0], qb[1], qb[2])                                            
     c = Float3(qc[0], qc[1], qc[2])                                            
     on = c_bool(p_on_element)
-    helmholtz.ComputeL_3D(c_float(k), p, a, b, c, on, byref(result))           
+    intops.ComputeL_3D(c_float(k), p, a, b, c, on, byref(result))
     return np.complex64(result.re+result.im*1j)                                
 
 
@@ -20,7 +21,7 @@ def compute_m(k, p, qa, qb, qc, p_on_element):
     b = Float3(qb[0], qb[1], qb[2])                                            
     c = Float3(qc[0], qc[1], qc[2])                                            
     on = c_bool(p_on_element)
-    helmholtz.ComputeM_3D(c_float(k), p, a, b, c, on, byref(result))           
+    intops.ComputeM_3D(c_float(k), p, a, b, c, on, byref(result))
     return np.complex64(result.re+result.im*1j)                                
 
 
@@ -32,7 +33,7 @@ def compute_mt(k, p, vec_p, qa, qb, qc, p_on_element):
     b = Float3(qb[0], qb[1], qb[2])                                            
     c = Float3(qc[0], qc[1], qc[2])                                            
     on = c_bool(p_on_element)
-    helmholtz.ComputeMt_3D(c_float(k), p, vp, a, b, c, on, byref(result))      
+    intops.ComputeMt_3D(c_float(k), p, vp, a, b, c, on, byref(result))
     return np.complex64(result.re+result.im*1j)                                
 
 
@@ -44,5 +45,5 @@ def compute_n(k, p, vec_p, qa, qb, qc, p_on_element):
     b = Float3(qb[0], qb[1], qb[2])                                            
     c = Float3(qc[0], qc[1], qc[2])                                            
     on = c_bool(p_on_element)
-    helmholtz.ComputeN_3D(c_float(k), p, vp, a, b, c, on, byref(result))       
+    intops.ComputeN_3D(c_float(k), p, vp, a, b, c, on, byref(result))
     return np.complex64(result.re+result.im*1j)                                

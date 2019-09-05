@@ -20,4 +20,15 @@ with open("README.md", "r") as fh:
           packages=['abem'],
           zip_safe=False,
           ext_modules=[intops],
-          test_suite='tests',)
+          test_suite='tests',
+          data_files=[('notebooks', ['notebooks/exterior_helmholtz_solver_2d.ipynb',
+                                     'notebooks/exterior_helmholtz_solver_3d.ipynb',
+                                     'notebooks/exterior_helmholtz_solver_rad.ipynb',
+                                     'notebooks/interior_helmholtz_solver_2d.ipynb',
+                                     'notebooks/interior_helmholtz_solver_3d.ipynb',
+                                     'notebooks/interior_helmholtz_solver_rad.ipynb',
+                                     'notebooks/rayleigh_cavity_1.ipynb',
+                                     'notebooks/rayleigh_cavity_2.ipynb',
+                                     'notebooks/rayleigh_solver_3d_disk.ipynb',
+                                     'notebooks/rayleigh_solver_square.ipynb'])],
+          )
