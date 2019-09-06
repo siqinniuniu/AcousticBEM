@@ -23,8 +23,8 @@ install:
   - gcc --version
   - gfortran --version
   - python --version
-  - cd C
-  - make
+  - cd abem
+  - python setup.py sdist
   - cd ..
   - cd Python
   - export PYTHONPATH=`pwd`
