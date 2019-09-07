@@ -232,7 +232,6 @@ complex float computeL_2D(float k, Float2 p, Float2 a, Float2 b, bool pOnElement
   IntRule1D intRule = {8, aX_1D, aW_1D};
 
   Float2 ab = sub2f(b, a);
-  complex float res;
   if (pOnElement) {
     if (k == 0.0f) {
       float RA = norm2f(sub2f(p, a));
@@ -291,7 +290,6 @@ complex float computeM_2D(float k, Float2 p, Float2 a, Float2 b, bool pOnElement
   IntL stat = {k, p, zero, Normal2D(a, b)};
   IntRule1D intRule = {8, aX_1D, aW_1D};
 
-  complex float res;
   if (pOnElement) {
     return 0.0;
   } else {
@@ -332,7 +330,6 @@ complex float computeMt_2D(float k, Float2 p, Float2 normal_p, Float2 a, Float2 
   IntL stat = {k, p, zero, normal_p};
   IntRule1D intRule = {8, aX_1D, aW_1D};
 
-  complex float res;
   if (pOnElement) {
     return 0.0;
   } else {
@@ -407,7 +404,6 @@ complex float computeN_2D(float k, Float2 p, Float2 normal_p, Float2 a, Float2 b
   IntL stat = {k, p, normal_p, Normal2D(a, b)};
   IntRule1D intRule = {8, aX_1D, aW_1D};
 
-  complex float res;
   if (pOnElement) {
     if (k == 0.0f) {
       float RA = norm2f(sub2f(p, a));
