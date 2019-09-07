@@ -11,7 +11,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='abem',
-    version='0.0a1',
+    version='0.0a3',
     description='Boundary Element Method for Acoustic Simulations',
     long_description=long_description,
     long_description_content_type='text/markdown',
