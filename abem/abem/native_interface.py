@@ -1,7 +1,7 @@
 from ctypes import CDLL, c_int, c_float, c_void_p, Structure
+import sysconfig
 
-
-intops = CDLL('intops.cpython-36m-x86_64-linux-gnu.so')
+intops = CDLL('intops'.join([sysconfig.get_config_var('EXT_SUFFIX')]))
 intops.Hankel1.argtypes = [c_int, c_float, c_void_p]
 
 
