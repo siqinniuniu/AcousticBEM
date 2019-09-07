@@ -1,36 +1,11 @@
-matrix:
-  include:
-    - os: linux
-      compiler: gcc
-
-before_install:
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get update -qq; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get --yes update; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get --yes install -qq gcc-4.9; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo unlink /usr/bin/gcc; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo ln -s /usr/bin/gcc-4.9 /usr/bin/gcc; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get --yes install -qq gfortran-4.9; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo ln -s /usr/bin/gfortran-4.9 /usr/bin/gfortran; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then export CC="gcc-4.9"; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then export gcc="gcc-4.9"; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then export gfortran="gfortran-4.9"; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get --yes install python-numpy; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get --yes install python-scipy; fi
+language: python
+python:
+  - 3.6
 
 install:
   - pwd
-  - gcc --version
-  - gfortran --version
-  - python --version
-  - cd abem
-  - python setup.py test
-  - cd ..
-  - cd Fortran
-  - gcc --version
-  - gfortran --version
-  - make
-  - cd ..
-script:
-  - echo "Done"
+  - cd abm
+  - pip install -r requirements.txt
 
+script:
+  - python setup.py test
