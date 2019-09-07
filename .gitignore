@@ -8,6 +8,12 @@ __pycache__
 *.a
 *.OUT
 *.so
+.ipynb_checkpoints
+.idea
+*.egg-info
+*.msh
+venv
+abem/build
 fgsl_build
 fgsl
 gsl_build
