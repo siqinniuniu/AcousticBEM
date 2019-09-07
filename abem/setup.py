@@ -3,6 +3,7 @@ from setuptools import setup, Extension
 intops = Extension('intops',
                    sources=['intops/intops.c'],
                    depends=['intops/intops.h'],
+                   include_dirs=['intops'],
                    language='c', )
 
 with open("README.md", "r") as fh:
