@@ -74,7 +74,7 @@ class BoundarySolution(object):
     
     def radiation_ratio(self):
         power = 0.0
-        b_power: float = 0.0
+        b_power = 0.0
         for i in range(self.phis.size):
             pressure = sound_pressure(self.k, self.phis[i], c=self.parent.c,
                                       density=self.parent.density)
