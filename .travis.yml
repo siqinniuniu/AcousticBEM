@@ -6,6 +6,7 @@ install:
   - pwd
   - cd abem
   - pip install -r requirements.txt
+  - export LD_LIBRARY_PATH=$(pwd):$LD_LIBRARY_PATH
 
 script:
   - python setup.py test
