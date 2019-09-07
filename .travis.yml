@@ -23,12 +23,8 @@ install:
   - gcc --version
   - gfortran --version
   - python --version
-  - cd C
-  - make
-  - cd ..
-  - cd Python
-  - export PYTHONPATH=`pwd`
-  - python UnitTests.py
+  - cd abem
+  - python setup.py test
   - cd ..
   - cd Fortran
   - gcc --version
