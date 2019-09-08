@@ -15,8 +15,6 @@
  * You should have received a copy of the GNU General Public License           *
  * along with AcousticBEM.  If not, see <http://www.gnu.org/licenses/>.        *
  * --------------------------------------------------------------------------- */
-/* #include "intops.h" */
-
 #include <stdbool.h>
 #include <stdio.h>
 #include <math.h>
@@ -26,6 +24,7 @@
 
 #define MAX_LINE_RULE_SAMPLES 4096
 
+/* Used to be intops.h                                                        */
 /* ************************************************************************** */
 /* Struct representing points in 2-dimensional Euclidean space. */
 typedef struct {
@@ -152,13 +151,6 @@ void semiCircleIntegralRule(int nSections, IntRule1D intRule, IntRule2D * pSemiC
  */
 complex float complexLineIntegral(complex float(*integrand)(Float2, void*), void * state, IntRule2D intRule);
 /* ********************************************************************************************** */
-
-
-
-
-
-
-
 
 
 typedef struct {

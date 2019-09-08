@@ -1,23 +1,30 @@
 from setuptools import setup, Extension
 
-intops = Extension('abem.intops',
-                   sources=['abem/intops.c'],
+intops = Extension('intops',
+                   sources=['intops/intops.c'],
                    language='c', )
 
-with open("README.md", "r") as fh:
-    long_description = fh.read()
+def readme():
+    with open("README.md", "r") as fh:
+        return fh.read()
+
+def requirements():
+    # The dependencies are the same as the contents of requirements.txt
+    with open('requirements.txt') as f:
+        return [line.strip() for line in f if line.strip()]
+
 
 setup(
     name='abem',
     version='0.0a5',
     description='Boundary Element Method for Acoustic Simulations',
-    long_description=long_description,
+    long_description=readme(),
     long_description_content_type='text/markdown',
     url='http://github.com/fjargsto/AcousticBEM',
     author='Frank Jargstorff',
     license='GNU General Public License',
     packages=['abem'],
-    install_requires=['numpy', 'scipy'],
+    install_requires=requirements(),
     zip_safe=False,
     ext_modules=[intops],
     test_suite='test',
