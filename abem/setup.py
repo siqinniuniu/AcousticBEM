@@ -1,7 +1,7 @@
 from setuptools import setup, Extension
 
-intops = Extension('intops',
-                   sources=['intops/intops.c'],
+intops = Extension('abem.intops',
+                   sources=['abem/intops.c'],
                    language='c', )
 
 with open("README.md", "r") as fh:
@@ -9,7 +9,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='abem',
-    version='0.0a4',
+    version='0.0a5',
     description='Boundary Element Method for Acoustic Simulations',
     long_description=long_description,
     long_description_content_type='text/markdown',
